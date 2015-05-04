@@ -25,8 +25,9 @@ function PWM (value) {
 	this.value = value;
 }
 
-function AIO (value) {
+function AIO (value, mode) {
 	this.value = value;
+	this.mode = mode;
 }
 
 function VCC3 () {
@@ -46,6 +47,7 @@ function Pin (pin_capacities, currentMode, number) {
 	this.pin_capacities = pin_capacities;
 	this.currentMode = currentMode;
 	this.number = number;
+	this.value = null;
 	return this;
 }
 Pin.prototype.setValueFromOutside = function(value) {
@@ -61,7 +63,7 @@ function Board (name, picture, pins_description, pins) {
 }
 
 Board.prototype.searchPin = function(number) {
-	for (var i = 0; i < this.pins.length; i++) {
+	for (var i = 1; i < this.pins.length; i++) {
 		if (this.pins[i].number === number)
 			return this.pins[i];
 	}
@@ -69,38 +71,43 @@ Board.prototype.searchPin = function(number) {
 
 Board.prototype.digitalRead = function(pin) {
 
-	for (var i = 0; i < this.pins.length; i++) {
-		if (this.pins[i].number === pin.number) {
-			if (this.pins[i].pin_capacities.indexOf("GPIO_IN") === -1) {
-				console.log("This is wrong. This will break. We are not doing this.");
-				return;
-			}
-		}
+	if (this.searchPin(pin).pin_capacities.indexOf("GPIO_IN") === -1) {
+		console.log("This is wrong. This will break. We are not doing this.");
+		return;
 	}
-	this.pins[pin].currentMode = GPIO_IN;
-	return this.pins[pin].value;
+	this.searchPin(pin).currentMode = "GPIO_IN";
+	return this.searchPin(pin).value;
 };
 
 Board.prototype.digitalWrite = function(pin, val) {
-	for (var i = 0; i < this.pins.length; i++) {
-		if (this.pins[i].number === pin.number) {
-			if (this.pins[i].pin_capacities.indexOf("GPIO_OUT") === -1) {
-				console.log("This is wrong. This will break. We are not doing this.");
-				return;
-			}
-		}
+	if (this.searchPin(pin).pin_capacities.indexOf("GPIO_OUT") === -1) {
+		console.log("This is wrong. This will break. We are not doing this.");
+		return;
 	}
-	this.pins[pin].currentMode = GPIO_OUT;
-	this.pins[pin].value = val;
+	this.searchPin(pin).currentMode = "GPIO_OUT";
+	this.searchPin(pin).value = val;
 };
 
 Board.prototype.pinMode = function(pin, mode) {
-	if (this.pins_description[pin] === "GPIO") {
-		var value = this.pins[pin].value;
-		this.pins[pin] = GPIO (value, mode);
-		this.pins[pin].setMode(mode);
+	var thisPin = this.searchPin(pin);
+	if (thisPin.pin_capacities.indexOf("GPIO_IN") === -1 ||
+		thisPin.pin_capacities.indexOf("GPIO_OUT") === -1) {
+		var value = thisPin.value;
+		thisPin.currentMode = mode;
+		if (mode === "input")
+			thisPin.currentMode = "GPIO_IN";
+		if (mode === "output")
+			thisPin.currentMode = "GPIO_OUT";
 	}
+	// 	thisPin = GPIO (value, mode);
+	// 	thisPin.setMode(mode); //todo
+
 };
 
 var pi = raspberryPiBoard();
 console.log(pi);
+console.log();
+// console.log(pi.searchPin(15));
+
+pi.digitalWrite(15, 666);
+console.log(pi.searchPin(15));
