@@ -1,0 +1,29 @@
+
+[DONE] dump la status => tot arrayul de pini cu modul si valoarea cu get si setPin
+
+[DONE] getPin - mod si val
+[DONE] setPin - sa poti sa ii dai o val (refuza sau nu)
+
+Piese:
+
+led,
+	2 pini
+	amandoi pot fi in
+	getState (1 sau 0) in fct de val pinilor (unul 0 si unul 1 - pin plus si pin minus)
+buton
+	2 pini
+	pin in si pin out
+	val in se copiaza in out daca butonnul e apasat
+
+	1/0/unknown/open (U,Z, negative amandoua)
+
+wiring
+
+-un json sa pot sa descriu cum sunt legate componente
+
+-sa vad cum pot reprezenta un graf cu legaturi intre ele
+-graf orientat
+
+-intr-un in pot fi mai multe out-uri , cu conditia ca valorile out-urilor sa fie Z
+
+

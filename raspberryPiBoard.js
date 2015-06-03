@@ -1,15 +1,8 @@
 function raspberryPiBoard () {
 	this.name = "raspberryPiBoard";
 	this.picture = "";
-
-	// this.pins_description = [
-	// 		"VCC3", "VCC5", GPIO2, "VCC5", GPIO3,
-	// 		"GND", GPIO4, GPIO14, "GND", GPIO15,
-	// 		GPIO17, GPIO18, GPIO27, "GND", GPIO22,
-	// 		GPIO23, "VCC3", GPIO24, GPIO10, "GND",
-	// 		GPIO9, GPIO25, GPIO11, GPIO8, "GND", GPIO7
-	// ];
 	this.pins = [];
+	this.numberOfPins = 30;
 
 	this.pins[0] = new Pin (["VCC3"], "VCC3", -1);
 	this.pins[1] = new Pin (["VCC5"], "VCC5", -1);
@@ -58,6 +51,6 @@ function raspberryPiBoard () {
 	this.pins[39] = new Pin (["GPIO_IN", "GPIO_OUT"], "GPIO_IN", 29);
 
 
-	this.piBoard = new Board(this.name, this.picture, this.pins_description, this.pins);
+	this.piBoard = new Board(this.name, this.picture, this.pins_description, this.pins, this.numberOfPins);
 	return this.piBoard;
 }

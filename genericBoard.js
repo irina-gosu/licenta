@@ -5,6 +5,11 @@ var vcc_value3 = 3.3; //3.3
 var vcc_value5 = 5; //3.3
 var gnd_value = 0;
 
+// check .h wyliodrin
+var INPUT = 0;
+var OUTPUT = 1;
+
+
 function GPIO (value, mode) {
 	this.mode = mode;
 	this.value = value;
@@ -43,71 +48,128 @@ function GND (gnd_value) {
 }
 
 function Pin (pin_capacities, currentMode, number) {
-	// pin_capacities_options = [GPIO_IN, GPIO_OUT, PWM, AIO_IN, AIO_OUT, I2C_SCL, I2C_SDA, SPI_MISO, SPI_MOSI, SPI_CLK, SPI_SS];
-	this.pin_capacities = pin_capacities;
+	// pin_capacities_options = [GPIO_IN, GPIO_OUT, PWM, AIO_IN, AIO_OUT,
+	// I2C_SCL, I2C_SDA, SPI_MISO, SPI_MOSI, SPI_CLK, SPI_SS];
 	this.currentMode = currentMode;
 	this.number = number;
-	this.value = null;
+	this.value = -25;
+	this.pin_capacities = pin_capacities;
 	return this;
 }
 Pin.prototype.setValueFromOutside = function(value) {
 	// this. should do what ?!
 };
 
-function Board (name, picture, pins_description, pins) {
+function returnPin (currentMode, value, number) {
+	this.mode = currentMode;
+	this.value = value;
+	this.number = number;
+	return this;
+}
+
+function Board (name, picture, pins_description, pins, numberOfPins) {
 	this.name = name;
 	this.picture = picture;
 	// this.pins_description = pins_description;
 	this.pins = pins;
+	this.numberOfPins = numberOfPins;
 	return this;
 }
 
 Board.prototype.searchPin = function(number) {
-	for (var i = 1; i < this.pins.length; i++) {
+	for (var i = 0; i < this.pins.length; i++) {
 		if (this.pins[i].number === number)
 			return this.pins[i];
 	}
 };
 
 Board.prototype.digitalRead = function(pin) {
-
-	if (this.searchPin(pin).pin_capacities.indexOf("GPIO_IN") === -1) {
-		console.log("This is wrong. This will break. We are not doing this.");
-		return;
-	}
-	this.searchPin(pin).currentMode = "GPIO_IN";
+	this.pinMode(pin, INPUT);
 	return this.searchPin(pin).value;
 };
 
 Board.prototype.digitalWrite = function(pin, val) {
-	if (this.searchPin(pin).pin_capacities.indexOf("GPIO_OUT") === -1) {
-		console.log("This is wrong. This will break. We are not doing this.");
-		return;
-	}
-	this.searchPin(pin).currentMode = "GPIO_OUT";
+	this.pinMode(pin, OUTPUT);
 	this.searchPin(pin).value = val;
 };
 
 Board.prototype.pinMode = function(pin, mode) {
 	var thisPin = this.searchPin(pin);
-	if (thisPin.pin_capacities.indexOf("GPIO_IN") === -1 ||
-		thisPin.pin_capacities.indexOf("GPIO_OUT") === -1) {
-		var value = thisPin.value;
-		thisPin.currentMode = mode;
-		if (mode === "input")
-			thisPin.currentMode = "GPIO_IN";
-		if (mode === "output")
-			thisPin.currentMode = "GPIO_OUT";
-	}
-	// 	thisPin = GPIO (value, mode);
-	// 	thisPin.setMode(mode); //todo
+	var modePin = typeof mode;
 
+	if (thisPin.pin_capacities.indexOf("GPIO_IN") != -1 ||
+			thisPin.pin_capacities.indexOf("GPIO_OUT") != -1) {
+
+		if (modePin === "string") {
+			if (mode.toLowerCase() === "INPUT".toLowerCase()) {
+				thisPin.currentMode = "GPIO_IN";
+			}
+			if (mode.toLowerCase() === "OUTPUT".toLowerCase()) {
+				thisPin.currentMode = "GPIO_OUT";
+			}
+		} else {
+			if (mode === INPUT) {
+				thisPin.currentMode = "GPIO_IN";
+			}
+			if (mode === OUTPUT) {
+				thisPin.currentMode = "GPIO_OUT";
+			}
+		}
+	} else {
+		console.log("This is wrong. This will break. We are not doing this.");
+		return;
+	}
+	return thisPin.currentMode;
+};
+
+
+Board.prototype.getPin = function(pin) {
+	var thatPin = this.searchPin(pin);
+	if (thatPin != null) {
+		var thisPin = new returnPin(thatPin.currentMode, thatPin.value, thatPin.number);
+		return thisPin;
+	} else {
+		console.log("Found null");
+		return;
+	}
+};
+
+Board.prototype.setPin = function(pin, value) {
+	var thisPin = this.searchPin(pin);
+	// verificari daca se poate face setPin. cand nu se poate?
+	thisPin.value = value;
+};
+
+Board.prototype.dump = function() {
+	var pin_array = [];
+	for (var i = 0; i < this.numberOfPins; i++) {
+		if (this.getPin(i) != null) {
+			pin_array.push(this.getPin(i));
+		} else {
+			console.log("There is no pin " + i);
+		}
+	}
+	return pin_array;
 };
 
 var pi = raspberryPiBoard();
 console.log(pi);
-console.log();
+
+// pi.digitalWrite(15, 666);
 // console.log(pi.searchPin(15));
 
-pi.digitalWrite(15, 666);
-console.log(pi.searchPin(15));
+// console.log(pi.digitalRead(15));
+
+// console.log(pi.pinMode(15, "output"));
+// console.log(pi.pinMode(15, 1));
+
+// console.log(pi.dump());
+
+
+var placuta = {
+	"pins": {
+	// "1": [ 1 (conectat), boardName (placuta/piesa la care e conectat), pinul de pe placuta]
+
+	}
+
+}
