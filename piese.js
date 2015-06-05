@@ -8,6 +8,7 @@ function Led (input, gnd) {
 	this.input = input;
 	this.gnd = gnd;
 	this.state = this.getState();
+	this.componentId = -1;
 }
 
 Led.prototype.getState = function() {
@@ -19,7 +20,8 @@ Led.prototype.getState = function() {
 function Button (input, output) {
 	this.input = input;
 	this.output = output;
-	this.state = 0;
+	this.state = OFF;
+	this.componentId = -1;
 }
 Button.prototype.pushed = function(state) {
 	if (state === 1) //apasat
@@ -27,9 +29,8 @@ Button.prototype.pushed = function(state) {
 	return this.output; // reuturnez ceva sau nu ?
 };
 
-// var led = new Led (1, 0);
+var led = new Led (0, 0);
 // console.log("led " + led.state);
 
 // var buton = new Button (5, 6);
 // console.log("buton " + buton.pushed(1));
-

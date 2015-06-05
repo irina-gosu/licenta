@@ -47,13 +47,14 @@ function GND (gnd_value) {
 	this.value = value;
 }
 
-function Pin (pin_capacities, currentMode, number) {
+function Pin (pin_capacities, currentMode, number, value) {
 	// pin_capacities_options = [GPIO_IN, GPIO_OUT, PWM, AIO_IN, AIO_OUT,
 	// I2C_SCL, I2C_SDA, SPI_MISO, SPI_MOSI, SPI_CLK, SPI_SS];
 	this.currentMode = currentMode;
 	this.number = number;
-	this.value = -25;
+	this.value = value;
 	this.pin_capacities = pin_capacities;
+	this.neighbors = [];
 	return this;
 }
 Pin.prototype.setValueFromOutside = function(value) {
@@ -71,8 +72,9 @@ function Board (name, picture, pins_description, pins, numberOfPins) {
 	this.name = name;
 	this.picture = picture;
 	// this.pins_description = pins_description;
-	this.pins = pins;
 	this.numberOfPins = numberOfPins;
+	this.componentId = -1;
+	this.pins = pins;
 	return this;
 }
 
@@ -166,10 +168,18 @@ console.log(pi);
 // console.log(pi.dump());
 
 
-var placuta = {
-	"pins": {
-	// "1": [ 1 (conectat), boardName (placuta/piesa la care e conectat), pinul de pe placuta]
+var components = [];
 
-	}
+pi.componentId = components.length;
+components.push(pi);
+led.componentId = components.length;
+components.push(led);
 
-}
+var components_json = JSON.stringify(components);
+
+console.log(components_json);
+
+var div = document.getElementById('content');
+div.innerHTML = components_json;
+
+
