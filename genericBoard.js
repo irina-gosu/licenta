@@ -10,56 +10,43 @@ var INPUT = 0;
 var OUTPUT = 1;
 
 
-function GPIO (value, mode) {
-	this.mode = mode;
-	this.value = value;
-    return this;
-}
-GPIO.prototype.getMode = function() {
-	return this.mode;
-};
-GPIO.prototype.setMode = function(mode) {
-	this.mode = mode;
-};
+// function GPIO (value, mode) {
+// 	this.mode = mode;
+// 	this.value = value;
+//     return this;
+// }
+// GPIO.prototype.getMode = function() {
+// 	return this.mode;
+// };
+// GPIO.prototype.setMode = function(mode) {
+// 	this.mode = mode;
+// };
 
-function PWM (value) {
-	if (value > maxPWM)
-		value = maxPWM;
-	if (value < 0)
-		value = 0;
-	this.value = value;
-}
+// function PWM (value) {
+// 	if (value > maxPWM)
+// 		value = maxPWM;
+// 	if (value < 0)
+// 		value = 0;
+// 	this.value = value;
+// }
 
-function AIO (value, mode) {
-	this.value = value;
-	this.mode = mode;
-}
+// function AIO (value, mode) {
+// 	this.value = value;
+// 	this.mode = mode;
+// }
 
-function VCC3 () {
-	this.value = vcc_value3;
-}
+// function VCC3 () {
+// 	this.value = vcc_value3;
+// }
 
-function VCC5 () {
-	this.value = vcc_value5;
-}
+// function VCC5 () {
+// 	this.value = vcc_value5;
+// }
 
-function GND (gnd_value) {
-	this.value = value;
-}
+// function GND (gnd_value) {
+// 	this.value = value;
+// }
 
-function Pin (pin_capacities, currentMode, number, value) {
-	// pin_capacities_options = [GPIO_IN, GPIO_OUT, PWM, AIO_IN, AIO_OUT,
-	// I2C_SCL, I2C_SDA, SPI_MISO, SPI_MOSI, SPI_CLK, SPI_SS];
-	this.currentMode = currentMode;
-	this.number = number;
-	this.value = value;
-	this.pin_capacities = pin_capacities;
-	this.neighbors = [];
-	return this;
-}
-Pin.prototype.setValueFromOutside = function(value) {
-	// this. should do what ?!
-};
 
 function returnPin (currentMode, value, number) {
 	this.mode = currentMode;
@@ -73,10 +60,18 @@ function Board (name, picture, pins_description, pins, numberOfPins) {
 	this.picture = picture;
 	// this.pins_description = pins_description;
 	this.numberOfPins = numberOfPins;
+	this.changePinMode = 1;
 	this.componentId = -1;
 	this.pins = pins;
+	this.assignPinPos();
 	return this;
 }
+
+Board.prototype.assignPinPos = function() {
+	for (var i = 0; i < this.pins.length; i++) {
+		this.pins[i].pos = i;
+	}
+};
 
 Board.prototype.searchPin = function(number) {
 	for (var i = 0; i < this.pins.length; i++) {
@@ -118,7 +113,7 @@ Board.prototype.pinMode = function(pin, mode) {
 			}
 		}
 	} else {
-		console.log("This is wrong. This will break. We are not doing this.");
+		console.log("This is wrong. This will break. We are not doing this. " + pin);
 		return;
 	}
 	return thisPin.currentMode;
@@ -157,15 +152,49 @@ Board.prototype.dump = function() {
 var pi = raspberryPiBoard();
 console.log(pi);
 
-// pi.digitalWrite(15, 666);
-// console.log(pi.searchPin(15));
 
-// console.log(pi.digitalRead(15));
+function connectPins (component1, pin1, component2, pin2) {
+	// consideram componenta1/pin1 = output; componenta2/pin2 input
+	// pin1 si pin2 sunt obiecte Pin, nu numere de pini
 
-// console.log(pi.pinMode(15, "output"));
-// console.log(pi.pinMode(15, 1));
+	switch(pin1.currentMode.toLowerCase()) {
+	case "OUT0".toLowerCase():
+		if (pin2.currentMode.toLowerCase() === "OUT0".toLowerCase()) {
+			pin2.neighbors.push(new Neighbor (component1.componentId, pin1));
 
-// console.log(pi.dump());
+		} else {
+			console.log("This is wrong. This will break. We are not doing this. ");
+			return;
+		}
+	break;
+	case "GPIO_IN".toLowerCase():
+		// pinMode will return error if the operation is not permitted
+		component1.pinMode(pin1.number, OUTPUT);
+	break;
+	case "INPUT".toLowerCase(): //led sau buton (piese simple)
+		console.log("This is wrong. This will break. We are not doing this. ");
+		return;
+	break;
+	default: //"output" sau "GPIO_OUT"
+		switch(pin2.currentMode.toLowerCase()) {
+		case "OUT0".toLowerCase():
+			console.log("This is wrong. This will break. We are not doing this. ");
+			return;
+		break;
+		case "GPIO_OUT".toLowerCase():
+			component2.pinMode(pin2.number, INPUT);
+		break;
+		case "OUTPUT".toLowerCase():
+			console.log("This is wrong. This will break. We are not doing this. ");
+			return;
+		break;
+		default:
+		}
+	}
+	pin1.neighbors.push(new Neighbor (component2.componentId, pin2));
+	pin2.value = pin1.value;
+}
+
 
 
 var components = [];
@@ -175,11 +204,24 @@ components.push(pi);
 led.componentId = components.length;
 components.push(led);
 
-var components_json = JSON.stringify(components);
 
-console.log(components_json);
-
+//daca mut asta mai jos iau : Uncaught TypeError: Converting circular structure to JSON
+var components_json = JSON.stringify(components, null, 4);
 var div = document.getElementById('content');
 div.innerHTML = components_json;
 
+// // am conectat un led pe pinul 5 (GND) si pinul 17 (GPIO_5)
+components[0].setPin(components[0].pins[17].number, 1);
+connectPins(components[0], components[0].pins[17], components[1], components[1].input);
 
+connectPins(components[0], components[0].pins[5], components[1], components[1].gnd);
+
+console.log(components[0].pins[17]);
+console.log(components[1].state = components[1].getState());
+
+
+// var components_json = JSON.stringify(components);
+// var components_json = JSON.stringify(components, null, 4);
+
+// var div = document.getElementById('content');
+// div.innerHTML = components_json;
