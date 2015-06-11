@@ -5,7 +5,6 @@ var vcc_value3 = 3.3; //3.3
 var vcc_value5 = 5; //3.3
 var gnd_value = 0;
 
-// check .h wyliodrin
 var INPUT = 0;
 var OUTPUT = 1;
 
@@ -211,36 +210,12 @@ function disconnectPins (component1, pin1, component2, pin2) {
 	}
 }
 
-
-
 var components = [];
 
 pi.componentId = components.length;
 components.push(pi);
 led.componentId = components.length;
 components.push(led);
-
-
-//daca mut asta mai jos iau : Uncaught TypeError: Converting circular structure to JSON
-var components_json = JSON.stringify(components, null, 4);
-var div = document.getElementById('content');
-div.innerHTML = components_json;
-
-// // am conectat un led pe pinul 5 (GND) si pinul 17 (GPIO_5)
-components[0].setPin(components[0].pins[17].number, 1);
-connectPins(components[0], components[0].pins[17], components[1], components[1].input);
-
-connectPins(components[0], components[0].pins[5], components[1], components[1].gnd);
-
-console.log(components[0].pins[17]);
-console.log(components[1].input);
-console.log(components[0].pins[5]);
-console.log(components[1].gnd);
-console.log(components[1].state = components[1].getState());
-
-
-// disconnectPins(components[0], components[0].pins[17], components[1], components[1].input);
-// disconnectPins(components[0], components[0].pins[5], components[1], components[1].gnd);
 
 // var components_json = JSON.stringify(components);
 // var components_json = JSON.stringify(components, null, 4);
