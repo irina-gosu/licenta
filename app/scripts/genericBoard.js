@@ -54,13 +54,12 @@ function returnPin (currentMode, value, number) {
 	return this;
 }
 
-function Board (name, picture, pins_description, pins, numberOfPins) {
+function Board (name, picture, pins_description, pins) {
 	this.name = name;
-	this.picture = picture;
-	// this.pins_description = pins_description;
-	this.numberOfPins = numberOfPins;
-	this.changePinMode = 1;
+	this.label = "";
 	this.componentId = -1;
+
+	this.picture = picture;
 	this.pins = pins;
 	this.assignPinPos();
 	return this;
@@ -79,18 +78,18 @@ Board.prototype.searchPin = function(number) {
 	}
 };
 
-Board.prototype.digitalRead = function(pin) {
-	this.pinMode(pin, INPUT);
+Board.prototype.digitalRead = function(pin_nr) {
+	this.pinMode(pin_nr, INPUT);
 	return this.searchPin(pin).value;
 };
 
-Board.prototype.digitalWrite = function(pin, val) {
-	this.pinMode(pin, OUTPUT);
-	this.searchPin(pin).value = val;
+Board.prototype.digitalWrite = function(pin_nr, val) {
+	this.pinMode(pin_nr, OUTPUT);
+	this.searchPin(pin_nr).value = val;
 };
 
-Board.prototype.pinMode = function(pin, mode) {
-	var thisPin = this.searchPin(pin);
+Board.prototype.pinMode = function(pin_nr, mode) {
+	var thisPin = this.searchPin(pin_nr);
 	var modePin = typeof mode;
 
 	if (thisPin.pin_capacities.indexOf("GPIO_IN") != -1 ||
@@ -130,11 +129,10 @@ Board.prototype.getPin = function(pin) {
 	}
 };
 
-Board.prototype.setPin = function(pin, value) {
-	var thisPin = this.searchPin(pin);
-	// verificari daca se poate face setPin. cand nu se poate?
-	thisPin.value = value;
-};
+// Board.prototype.setPin = function(pin, value) {
+// 	var thisPin = this.searchPin(pin);
+// 	thisPin.value = value;
+// };
 
 Board.prototype.dump = function() {
 	var pin_array = [];
@@ -148,13 +146,15 @@ Board.prototype.dump = function() {
 	return pin_array;
 };
 
-var pi = raspberryPiBoard();
-console.log(pi);
 
 
 function connectPins (component1, pin1, component2, pin2) {
 	// consideram componenta1/pin1 = output; componenta2/pin2 input
 	// pin1 si pin2 sunt obiecte Pin, nu numere de pini
+// console.log("component1 " + pin1.currentMode);
+// console.log(component1);
+// console.log("component2 " + pin2.currentMode + " "+component2.name);
+// console.log(component2);
 
 	switch(pin1.currentMode.toLowerCase()) {
 	case "OUT0".toLowerCase():
@@ -188,10 +188,16 @@ function connectPins (component1, pin1, component2, pin2) {
 			return;
 		break;
 		default:
+		console.log("something fishy");
 		}
 	}
+	// if (pin1.currentMode != "OUT0" & pin1.currentMode != "OUT1")
+		// component1.setPin(pin1.number, 1);
+		pin1.connected = 1;
+		pin2.connected = 1;
+	// pin2.value = pin1.value;
 	pin1.neighbors.push(new Neighbor (component2.componentId, pin2));
-	pin2.value = pin1.value;
+
 }
 
 function disconnectPins (component1, pin1, component2, pin2) {
@@ -203,19 +209,40 @@ function disconnectPins (component1, pin1, component2, pin2) {
 				for (var j = 0; j < pin2.neighbors.length; j++) {
 					if (pin2.neighbors[j].neighborPin === pin1) {
 						pin2.neighbors.splice(j, 1);
+						pin1.connected = 0;
+						pin2.connected = 0;
 					}
 				}
 			}
 		}
 	}
+	// if (component1.name === "Led")
+	// 	component1.getState();
+	// if (component2.name === "Led")
+	// 	component2.getState();
 }
+
+var pi = raspberryPiBoard();
+// console.log(pi);
+
+var led = new Led ();
+
 
 var components = [];
 
-pi.componentId = components.length;
-components.push(pi);
-led.componentId = components.length;
-components.push(led);
+var componentele = [];
+pi.componentId = componentele.length;
+componentele.push(pi);
+led.componentId = componentele.length;
+componentele.push(led);
+
+// console.log("test");
+// console.log(componentele);
+// console.log(led.getState());
+
+// var led2 = new Led();
+// led2.componentId = components.length;
+// components.push(led2);
 
 // var components_json = JSON.stringify(components);
 // var components_json = JSON.stringify(components, null, 4);

@@ -5,7 +5,7 @@ var ON = 1;
 var OFF = 0;
 
 var GND = 0;
-var value = -25;
+var randomValue = -25;
 var vcc_value = 1;
 
 
@@ -14,13 +14,14 @@ function Neighbor (componentId, neighborPin) {
 	this.neighborPin = neighborPin;
 }
 
-function Pin (pin_capacities, currentMode, number, value) {
+function Pin (pin_capacities, currentMode, number) {
 	// pin_capacities_options = [GPIO_IN, GPIO_OUT, PWM, AIO_IN, AIO_OUT,
 	// I2C_SCL, I2C_SDA, SPI_MISO, SPI_MOSI, SPI_CLK, SPI_SS];
 	this.currentMode = currentMode;
-	this.number = number;
+	this.number = number; //GPIOx, number = x
 	this.pos = -1;
-	this.value = value;
+	this.value = randomValue;	//digitalRead/digitalWrite
+	this.connected = 0;
 	this.pin_capacities = pin_capacities;
 	this.neighbors = [];
 	return this;
@@ -29,13 +30,22 @@ Pin.prototype.setValueFromOutside = function(value) {
 	// this. should do what ?!
 };
 
-function Led (input, gnd) {
+Pin.prototype.setPin = function(value) {
+	this.value = value;
+};
+
+// function Led (input, gnd) {
+function Led () {
 	this.name = "Led";
-	this.changePinMode = 0;
-	this.input = new Pin (["input"], "input", 1, Z);
-	this.gnd = new Pin (["OUT0"], "OUT0", 0, Z);
-	this.state = this.getState();
+	this.label = "";
+	this.state = 0;
 	this.componentId = -1;
+	this.input = new Pin (["input"], "input", 1);
+	this.gnd = new Pin (["OUT0"], "OUT0", 0);
+	this.pins = [];
+	this.pins.push(this.input);
+	this.pins.push(this.gnd);
+	this.state = this.getState();
 }
 
 Led.prototype.getState = function() {
@@ -47,10 +57,13 @@ Led.prototype.getState = function() {
 
 function Button (input, output) {
 	this.name = "Button";
-	this.changePinMode = 0;
-	this.input = new Pin (["input"], "input", 1, Z);
-	this.output = new Pin (["output"], "output", 0, Z);
+	this.label = "";
+	this.input = new Pin (["input"], "input", 1);
+	this.output = new Pin (["output"], "output", 0);
 	this.state = OFF;
+	this.pins = [];
+	this.pins.push(this.input);
+	this.pins.push(this.output);
 	this.componentId = -1;
 }
 Button.prototype.pushed = function(state) {
@@ -61,7 +74,8 @@ Button.prototype.pushed = function(state) {
 	// return this.output; // reuturnez ceva sau nu ?
 };
 
-var led = new Led (0, 0);
+// var led = new Led (0, 0);
+// var led = new Led ();
 // console.log("led " + led.state);
 
 // var buton = new Button (5, 6);
