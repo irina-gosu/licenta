@@ -171,7 +171,12 @@ function connectPins (component1, pin1, component2, pin2) {
 		component1.pinMode(pin1.number, OUTPUT);
 	break;
 	case "INPUT".toLowerCase(): //led sau buton (piese simple)
-		console.log("This is wrong. This will break. We are not doing this. ");
+		if (component1.name === "Resistor") {
+			var number = (pin1.number) ? 0 : 1;
+			component1.pins[pin1.number].currentMode = "output";
+			component1.pins[number].currentMode = "input";
+		} else
+			console.log("This is wrong. This will break. We are not doing this. ");
 		return;
 	break;
 	default: //"output" sau "GPIO_OUT"
@@ -184,11 +189,16 @@ function connectPins (component1, pin1, component2, pin2) {
 			component2.pinMode(pin2.number, INPUT);
 		break;
 		case "OUTPUT".toLowerCase():
-			console.log("This is wrong. This will break. We are not doing this. ");
+			if (component2.name === "Resistor") {
+				var number = (pin2.number) ? 0 : 1;
+				component2.pins[pin2.number].currentMode = "input";
+				component2.pins[number].currentMode = "output";
+			} else
+				console.log("This is wrong. This will break. We are not doing this. ");
 			return;
 		break;
 		default:
-		console.log("something fishy");
+			console.log("something fishy");
 		}
 	}
 	// if (pin1.currentMode != "OUT0" & pin1.currentMode != "OUT1")

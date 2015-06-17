@@ -1,30 +1,11 @@
 var nothing = -1;
 
 function handleGetClick(){
-	$.get('test_trei_leduri_netlist.xml', function(xml){
+	// $.get('test_trei_leduri_netlist.xml', function(xml){
+	$.get('board_cu_rezistenta.xml', function(xml){
 		var json = $.xml2json(xml);
-
 		parse_netlist(json);
-
-	// 	$("#json").JSONView(json);
-	// 	$("#json-collapsed").JSONView(json, { collapsed: true, nl2br: true, recursive_collapser: true });
-	// 	$('#collapse-btn').on('click', function() {
-	// 		$('#json').JSONView('collapse');
-	// 	});
-	// 	$('#expand-btn').on('click', function() {
-	// 		$('#json').JSONView('expand');
-	// 	});
-	// 	$('#toggle-btn').on('click', function() {
-	// 		$('#json').JSONView('toggle');
-	// 	});
-	// 	$('#toggle-level1-btn').on('click', function() {
-	// 		$('#json').JSONView('toggle', 1);
-	// 	});
-	// 	$('#toggle-level2-btn').on('click', function() {
-	// 		$('#json').JSONView('toggle', 2);
-	// 	});
 	});
-
 }
 
 function getPinFromComponent(component, pin_name) {
@@ -71,10 +52,19 @@ function getPinFromComponent(component, pin_name) {
 			} else console.log("Component Button does not have pin "+ pin_name);
 		}
 	}
+	if (component.name === "Resistor") {
+		if (pin_name === "Pin 0") {
+			return component.pin0;
+		} else {
+			if (pin_name === "Pin 1") {
+				return component.pin1;
+			} else console.log("Component Button does not have pin "+ pin_name);
+		}
+	}
 }
 
-
 function parse_netlist(json) {
+
 	for (var i = 0; i < json.net.length; i++) {
 		var connection = json.net[i].connector;
 		if (connection.length > 1) { // am pini de legat intre ei
@@ -102,16 +92,20 @@ function parse_netlist(json) {
 						// LED: verifica daca ultimele 3 caractere sunt "LED"
 						if (connection[j].part.title.substr(connection[j].part.title.length - 3) === "LED") {
 							comp = new Led();
+							initializare_led(comp, connection[j]);
 						} else {
 							if (connection[j].part.title.toLowerCase() === "Button") {
-								comp = new Button(42, 12);
+								comp = new Button();
 							} else {
-								console.log("What is this component? "+connection[j].part.title);
+								if (connection[j].part.title.substr(connection[j].part.title.length - 8) === "Resistor") {
+									comp = new Resistor();
+								} else {
+									console.log("What is this component? "+connection[j].part.title);
+								}
 							}
 						}
 					}
 					comp.label = connection[j].part.label;
-					console.log(connection[j].part.id);
 					comp.componentId = connection[j].part.id;
 					components.push(comp);
 					index.push(components.length - 1);
@@ -124,48 +118,59 @@ function parse_netlist(json) {
 			if (index.length === 2) {
 				if (pins[0] != nothing & pins[1] != nothing) {
 					connectPins(components[index[0]], pins[0], components[index[1]], pins[1]);
+					console.log("legam componentele "+components[index[0]].label +" cu "+ components[index[1]].label);
+						console.log("legam pinii "+pins[0].number +" cu "+ pins[1].number);
 				}
 			} else {
 				for (var j = 1; j < index.length; j++) {
-					if (components[index[0]] === components[index[j]] ) {
-						if (pins[0].number != pins[j].number)
+					if (components[index[0]] === components[index[j]]) {
+						if (pins[0].number != pins[j].number) {
 							connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
+							// console.log("legam componentele "+components[index[0]].label +" cu "+ components[index[j]].label);
+						}
+
 					} else {
 						connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
+						// console.log("legam componentele "+components[index[0]].label +" cu "+ components[index[j]].label);
+						// console.log("legam pinii "+pins[0].number +" cu "+ pins[j].number);
 					}
 				}
 			}
 		}
 	}
 
-
-
-	for (var i = 0; i < components.length; i++) {
-		for (var j = 0; j < components[i].pins.length; j++) {
-			if (components[i].pins[j].currentMode === "OUT0")
-				components[i].pins[j].value = 0;
-			if (components[i].pins[j].currentMode === "OUT1")
-				components[i].pins[j].value = 1;
-		}
-	}
+	// for (var i = 0; i < components.length; i++) {
+	// 	for (var j = 0; j < components[i].pins.length; j++) {
+	// 		if (components[i].pins[j].currentMode === "OUT0")
+	// 			components[i].pins[j].value = 0;
+	// 		if (components[i].pins[j].currentMode === "OUT1")
+	// 			components[i].pins[j].value = 1;
+	// 	}
+	// }
 
 	console.log(components);
+}
+
+
+function initializare_led(led, comp) {
+	var temp = comp.part.title;
+	temp = temp.substring(temp.indexOf("(")+1, temp.indexOf(")"));
+	var numberPattern = /\d+/g;
+	temp = temp.match( numberPattern );
+	led.type = _.parseInt(temp[0]);
+	console.log(led.type);
+	led.index = _.indexOf(leds, led.type);
 }
 
 function traverse (node, comp) {
 	var queue = [],
 		next = node;
-
 	while(next) {
 		if (next.neighbors) {
 			$.each(next.neighbors, function (i, neighbor) {
 				if (neighbor.neighborPin.value != node.value) {
 					neighbor.neighborPin.value = node.value;
 					queue.push(neighbor.neighborPin);
-					// console.log("vecini ");
-					// console.log(neighbor);
-					// console.log(neighbor.neighborPin);
-
 				} else {
 					return ;
 				}
@@ -176,29 +181,40 @@ function traverse (node, comp) {
 }
 
 
+function change_led (led, state) {
+	if (state) {
+		var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+led.componentId+'"] #color_path32').attr('fill', colours_on[led.index]);
+	} else {
+		var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+led.componentId+'"] #color_path32').attr('fill', colours_off[led.index]);
+	}
+}
+
 function simulate () {
+	for (var i = 0; i < components.length; i++) {
+		if (components[i].name === "Resistor") {
+			components[i].update_values();
+		}
+	}
 
 	for (var i = 0; i < components.length; i++) {
 		for (var j = 0; j < components[i].pins.length; j++) {
 			if (components[i].pins[j].number != -1) {
-				traverse(components[i].pins[j], components[i]);
+				 traverse(components[i].pins[j], components[i]);
 			}
 		}
 	}
-
 	for (var i = 0; i < components.length; i++) {
+
 		if (components[i].name === "Led") {
-			var led_off = "#e60000",
-				led_on = "#ff4d4d";
 			if (components[i].getState()) {
-				var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+components[i].componentId+'"] #color_path32').attr('fill', led_on);
+				// var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+components[i].componentId+'"] #color_path32').attr('fill', led_on);
+				change_led(components[i], ON);
 			} else {
-				var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+components[i].componentId+'"] #color_path32').attr('fill', led_off);
+				// var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+components[i].componentId+'"] #color_path32').attr('fill', led_off);
+				change_led(components[i], OFF);
 			}
 		}
 	}
-
-	// console.log(components);
 }
 
 $(document).ready(function() {
