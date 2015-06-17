@@ -118,36 +118,30 @@ function parse_netlist(json) {
 			if (index.length === 2) {
 				if (pins[0] != nothing & pins[1] != nothing) {
 					connectPins(components[index[0]], pins[0], components[index[1]], pins[1]);
-					console.log("legam componentele "+components[index[0]].label +" cu "+ components[index[1]].label);
-						console.log("legam pinii "+pins[0].number +" cu "+ pins[1].number);
 				}
 			} else {
 				for (var j = 1; j < index.length; j++) {
 					if (components[index[0]] === components[index[j]]) {
 						if (pins[0].number != pins[j].number) {
 							connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
-							// console.log("legam componentele "+components[index[0]].label +" cu "+ components[index[j]].label);
 						}
 
 					} else {
 						connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
-						// console.log("legam componentele "+components[index[0]].label +" cu "+ components[index[j]].label);
-						// console.log("legam pinii "+pins[0].number +" cu "+ pins[j].number);
 					}
 				}
 			}
 		}
 	}
 
-	// for (var i = 0; i < components.length; i++) {
-	// 	for (var j = 0; j < components[i].pins.length; j++) {
-	// 		if (components[i].pins[j].currentMode === "OUT0")
-	// 			components[i].pins[j].value = 0;
-	// 		if (components[i].pins[j].currentMode === "OUT1")
-	// 			components[i].pins[j].value = 1;
-	// 	}
-	// }
-
+	for (var i = 0; i < components.length; i++) {
+		for (var j = 0; j < components[i].pins.length; j++) {
+			if (components[i].pins[j].currentMode === "OUT0")
+				components[i].pins[j].value = 0;
+			if (components[i].pins[j].currentMode === "OUT1")
+				components[i].pins[j].value = 1;
+		}
+	}
 	console.log(components);
 }
 
@@ -158,28 +152,30 @@ function initializare_led(led, comp) {
 	var numberPattern = /\d+/g;
 	temp = temp.match( numberPattern );
 	led.type = _.parseInt(temp[0]);
-	console.log(led.type);
 	led.index = _.indexOf(leds, led.type);
 }
 
-function traverse (node, comp) {
+function bfs(node, comp) {
 	var queue = [],
 		next = node;
-	while(next) {
+
+	var modified = 0;
+	while (next) {
 		if (next.neighbors) {
-			$.each(next.neighbors, function (i, neighbor) {
-				if (neighbor.neighborPin.value != node.value) {
-					neighbor.neighborPin.value = node.value;
-					queue.push(neighbor.neighborPin);
-				} else {
-					return ;
+			for (var i = 0; i < next.neighbors.length; i++) {
+				if (next.neighbors[i].neighborPin.value != node.value) {
+					next.neighbors[i].neighborPin.setPin(node.value);
+					queue.push(next.neighbors[i].neighborPin);
+					modified = 1;
+					if (next.neighbors[i].neighborPin.value != node.value)
+						console.log("funck yyou");;
 				}
-			});
+			}
 		}
 		next = queue.shift();
 	}
+	return modified;
 }
-
 
 function change_led (led, state) {
 	if (state) {
@@ -190,21 +186,28 @@ function change_led (led, state) {
 }
 
 function simulate () {
-	for (var i = 0; i < components.length; i++) {
-		if (components[i].name === "Resistor") {
-			components[i].update_values();
-		}
-	}
-
-	for (var i = 0; i < components.length; i++) {
-		for (var j = 0; j < components[i].pins.length; j++) {
-			if (components[i].pins[j].number != -1) {
-				 traverse(components[i].pins[j], components[i]);
+	var modified = 1;
+	while (modified === 1) {
+		modified = 0;
+		var mod = 0;
+		for (var i = 0; i < components.length; i++) {
+			if (components[i].name.toLowerCase() === "Resistor".toLowerCase()) {
+				mod = components[i].update_values();
+				modified = (mod  === 1 || modified === 1) ? 1 : 0;
 			}
+			for (var j = 0; j < components[i].pins.length; j++) {
+				mod = bfs(components[i].pins[j], components[i]);
+				modified = (mod  === 1 || modified === 1) ? 1 : 0;
+			}
+			if (components[i].name === "Resistor") {
+				mod = components[i].update_values();
+				modified = (mod  === 1 || modified === 1) ? 1 : 0;
+			}
+
 		}
 	}
-	for (var i = 0; i < components.length; i++) {
 
+	for (var i = 0; i < components.length; i++) {
 		if (components[i].name === "Led") {
 			if (components[i].getState()) {
 				// var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+components[i].componentId+'"] #color_path32').attr('fill', led_on);

@@ -26,9 +26,6 @@ function Pin (pin_capacities, currentMode, number) {
 	this.neighbors = [];
 	return this;
 }
-Pin.prototype.setValueFromOutside = function(value) {
-	// this. should do what ?!
-};
 
 Pin.prototype.setPin = function(value) {
 	this.value = value;
@@ -92,11 +89,18 @@ function Resistor () {
 }
 
 Resistor.prototype.update_values = function() {
-	if (this.pins[0].currentMode === "input") {
-		this.pins[1].value = this.pins[0].value;
-	} else {
-		this.pins[0].value = this.pins[1].value;
+	var modif = 0;
+	if (this.pin0.currentMode === "input" && this.pin1.currentMode === "output") {
+		if (this.pin0.value != this.pin0.value) {
+			this.pin0.setPin(this.pin0.value);
+		}
 	}
+	if (this.pin0.currentMode === "output" && this.pin1.currentMode === "input") {
+		if (this.pin1.value != this.pin0.value) {
+			this.pin0.setPin(this.pin1.value);
+		}
+	}
+	return modif;
 };
 
 function Button () {

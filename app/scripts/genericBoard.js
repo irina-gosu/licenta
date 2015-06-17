@@ -170,16 +170,17 @@ function connectPins (component1, pin1, component2, pin2) {
 		// pinMode will return error if the operation is not permitted
 		component1.pinMode(pin1.number, OUTPUT);
 	break;
-	case "INPUT".toLowerCase(): //led sau buton (piese simple)
+	case "INPUT".toLowerCase(): //led sau buton sau rezistenta (piese simple)
 		if (component1.name === "Resistor") {
 			var number = (pin1.number) ? 0 : 1;
 			component1.pins[pin1.number].currentMode = "output";
 			component1.pins[number].currentMode = "input";
-		} else
+		} else {
 			console.log("This is wrong. This will break. We are not doing this. ");
-		return;
-	break;
+			return;
+		}
 	default: //"output" sau "GPIO_OUT"
+
 		switch(pin2.currentMode.toLowerCase()) {
 		case "OUT0".toLowerCase():
 			console.log("This is wrong. This will break. We are not doing this. ");
@@ -193,19 +194,23 @@ function connectPins (component1, pin1, component2, pin2) {
 				var number = (pin2.number) ? 0 : 1;
 				component2.pins[pin2.number].currentMode = "input";
 				component2.pins[number].currentMode = "output";
-			} else
+			} else {
 				console.log("This is wrong. This will break. We are not doing this. ");
-			return;
+				return;
+			}
+
 		break;
-		default:
-			console.log("something fishy");
+		default: // input, GPIO_IN
+			console.log("This should be fine");
+			// console.log(pin1.currentMode);
+			// console.log(component1.label);
+			// console.log(pin2.currentMode);
+			// console.log(component2.label);
+
 		}
 	}
-	// if (pin1.currentMode != "OUT0" & pin1.currentMode != "OUT1")
-		// component1.setPin(pin1.number, 1);
-		pin1.connected = 1;
-		pin2.connected = 1;
-	// pin2.value = pin1.value;
+	pin1.connected = 1;
+	pin2.connected = 1;
 	pin1.neighbors.push(new Neighbor (component2.componentId, pin2));
 
 }
