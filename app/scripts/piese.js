@@ -15,12 +15,10 @@ function Neighbor (componentId, neighborPin) {
 }
 
 function Pin (pin_capacities, currentMode, number) {
-	// pin_capacities_options = [GPIO_IN, GPIO_OUT, PWM, AIO_IN, AIO_OUT,
-	// I2C_SCL, I2C_SDA, SPI_MISO, SPI_MOSI, SPI_CLK, SPI_SS];
 	this.currentMode = currentMode;
-	this.number = number; //GPIOx, number = x
+	this.number = number;
 	this.pos = -1;
-	this.value = randomValue;	//digitalRead/digitalWrite
+	this.value = randomValue;
 	this.connected = 0;
 	this.pin_capacities = pin_capacities;
 	this.neighbors = [];
@@ -106,8 +104,8 @@ Resistor.prototype.update_values = function() {
 function Button () {
 	this.name = "Button";
 	this.label = "";
-	this.input = new Pin (["input"], "input", 1);
-	this.output = new Pin (["output"], "output", 0);
+	this.input = new Pin (["input"], "input", 0);
+	this.output = new Pin (["output"], "output", 1);
 	this.state = OFF;
 	this.pins = [];
 	this.pins.push(this.input);
@@ -122,9 +120,3 @@ Button.prototype.pushed = function(state) {
 	// return this.output; // reuturnez ceva sau nu ?
 };
 
-// var led = new Led (0, 0);
-// var led = new Led ();
-// console.log("led " + led.state);
-
-// var buton = new Button (5, 6);
-// console.log("buton " + buton.pushed(1));

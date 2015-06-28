@@ -1,11 +1,9 @@
 var GND = 0;
 var value = -25;
 var vcc_value = 1;
-// gnd = out0, vcc = out1
 
 function raspberryPiBoard () {
 	this.name = "raspberryPiBoard";
-	this.picture = "";
 	this.pins = [];
 
 	this.pins[0] = new Pin (["OUT1"], "OUT1", -1);
@@ -55,6 +53,6 @@ function raspberryPiBoard () {
 	this.pins[39] = new Pin (["GPIO_IN", "GPIO_OUT"], "GPIO_IN", 29);
 
 
-	this.piBoard = new Board(this.name, this.picture, this.pins_description, this.pins);
+	this.piBoard = new Board(this.name, this.pins);
 	return this.piBoard;
 }

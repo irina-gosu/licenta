@@ -1,10 +1,39 @@
+
+var components = [];
 var nothing = -1;
 
 function handleGetClick(){
-	// $.get('test_trei_leduri_netlist.xml', function(xml){
-	$.get('board_cu_rezistenta.xml', function(xml){
+	$.get('circuit.xml', function(xml){
+	// $.get('board_cu_rezistenta.xml', function(xml){
 		var json = $.xml2json(xml);
 		parse_netlist(json);
+
+
+	$("#json").JSONView(json);
+		$("#json-collapsed").JSONView(json, { collapsed: true, nl2br: true, recursive_collapser: true });
+		$('#collapse-btn').on('click', function() {
+			$('#json').JSONView('collapse');
+		});
+		$('#expand-btn').on('click', function() {
+			$('#json').JSONView('expand');
+		});
+		$('#toggle-btn').on('click', function() {
+			$('#json').JSONView('toggle');
+		});
+		$('#toggle-level1-btn').on('click', function() {
+			$('#json').JSONView('toggle', 1);
+		});
+		$('#toggle-level2-btn').on('click', function() {
+			$('#json').JSONView('toggle', 2);
+		});
+		$('#toggle-level3-btn').on('click', function() {
+			$('#json').JSONView('toggle', 3);
+		});
+		$('#toggle-level4-btn').on('click', function() {
+			$('#json').JSONView('toggle', 4);
+		});
+
+
 	});
 }
 

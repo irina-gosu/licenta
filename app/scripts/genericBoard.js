@@ -54,12 +54,10 @@ function returnPin (currentMode, value, number) {
 	return this;
 }
 
-function Board (name, picture, pins_description, pins) {
+function Board (name, pins) {
 	this.name = name;
 	this.label = "";
 	this.componentId = -1;
-
-	this.picture = picture;
 	this.pins = pins;
 	this.assignPinPos();
 	return this;
@@ -129,10 +127,10 @@ Board.prototype.getPin = function(pin) {
 	}
 };
 
-// Board.prototype.setPin = function(pin, value) {
-// 	var thisPin = this.searchPin(pin);
-// 	thisPin.value = value;
-// };
+Board.prototype.setPin = function(pin, value) {
+	var thisPin = this.searchPin(pin);
+	thisPin.value = value;
+};
 
 Board.prototype.dump = function() {
 	var pin_array = [];
@@ -201,12 +199,6 @@ function connectPins (component1, pin1, component2, pin2) {
 
 		break;
 		default: // input, GPIO_IN
-			console.log("This should be fine");
-			// console.log(pin1.currentMode);
-			// console.log(component1.label);
-			// console.log(pin2.currentMode);
-			// console.log(component2.label);
-
 		}
 	}
 	pin1.connected = 1;
@@ -231,10 +223,6 @@ function disconnectPins (component1, pin1, component2, pin2) {
 			}
 		}
 	}
-	// if (component1.name === "Led")
-	// 	component1.getState();
-	// if (component2.name === "Led")
-	// 	component2.getState();
 }
 
 var pi = raspberryPiBoard();
