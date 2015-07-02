@@ -1,39 +1,15 @@
 
 var components = [];
 var nothing = -1;
+var last_led = -1;
+var fisier_xml = '';
+var fisier_svg = '';
 
 function handleGetClick(){
-	$.get('circuit.xml', function(xml){
-	// $.get('board_cu_rezistenta.xml', function(xml){
+	// $.get('circuit.xml', function(xml){
+	$.get(fisier_xml, function(xml){
 		var json = $.xml2json(xml);
 		parse_netlist(json);
-
-
-	$("#json").JSONView(json);
-		$("#json-collapsed").JSONView(json, { collapsed: true, nl2br: true, recursive_collapser: true });
-		$('#collapse-btn').on('click', function() {
-			$('#json').JSONView('collapse');
-		});
-		$('#expand-btn').on('click', function() {
-			$('#json').JSONView('expand');
-		});
-		$('#toggle-btn').on('click', function() {
-			$('#json').JSONView('toggle');
-		});
-		$('#toggle-level1-btn').on('click', function() {
-			$('#json').JSONView('toggle', 1);
-		});
-		$('#toggle-level2-btn').on('click', function() {
-			$('#json').JSONView('toggle', 2);
-		});
-		$('#toggle-level3-btn').on('click', function() {
-			$('#json').JSONView('toggle', 3);
-		});
-		$('#toggle-level4-btn').on('click', function() {
-			$('#json').JSONView('toggle', 4);
-		});
-
-
 	});
 }
 
@@ -122,6 +98,7 @@ function parse_netlist(json) {
 						if (connection[j].part.title.substr(connection[j].part.title.length - 3) === "LED") {
 							comp = new Led();
 							initializare_led(comp, connection[j]);
+							last_led = connection[j].part.id; //componentID
 						} else {
 							if (connection[j].part.title.toLowerCase() === "Button") {
 								comp = new Button();
@@ -208,9 +185,10 @@ function bfs(node, comp) {
 
 function change_led (led, state) {
 	if (state) {
-		var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+led.componentId+'"] #color_path32').attr('fill', colours_on[led.index]);
+		// $("#svg1 svg g[partID=57430] #color_path32").attr ('fill', '#0f0f0f')
+		var ledul = $("#svg1 svg g[partID=" + led.componentId + "] #color_path32").attr ('fill', colours_on[led.index]);
 	} else {
-		var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+led.componentId+'"] #color_path32').attr('fill', colours_off[led.index]);
+		var ledul = $("#svg1 svg g[partID=" + led.componentId + "] #color_path32").attr ('fill', colours_off[led.index]);
 	}
 }
 
@@ -245,17 +223,290 @@ function simulate () {
 				// var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+components[i].componentId+'"] #color_path32').attr('fill', led_off);
 				change_led(components[i], OFF);
 			}
+			// last_led = components[i];
 		}
+	}
+
+	if (last_led != -1) {
+		// flash_light();
+		console.log("ledul "+ last_led);
 	}
 }
 
-$(document).ready(function() {
-/** work when all HTML loaded except images and DOM is ready **/
-	handleGetClick();
-	simulate();
+// function flash_light() {
+// 	var options = {
+// 	  camera: navigator.mozCameras.getListOfCameras()[0]
+// 	};
+// 	navigator.mozCameras.getCamera(options, onSuccess);
+// }
+
+// // var currentCamera = null;
+// function onSuccess(camera) {
+// 	var flash = camera.capabilities.flashModes;
+
+// 		camera.flashMode = 'on';
+// 		console.log('flashModes: ' + flash);
+
+// 	// flash.forEach(function ('on') {
+// 	// 	console.log();
+// 	// 	camera.flashMode = 'on';
+// 	// 	console.log('flashModes: ' + flash);
+// 	// });
+// };
+
+// $(document).ready(function() {
+// //* work when all HTML loaded except images and DOM is ready *
+// 	handleGetClick();
+// 	simulate();
+// });
+
+// var xhr = new XMLHttpRequest();
+// xhr.open("GET",fisier_svg,false);
+// xhr.overrideMimeType("image/svg+xml");
+// xhr.send("");
+// document.getElementById("svg1").appendChild(xhr.responseXML.documentElement);
+var lines;
+
+function runCode(code) {
+	// eval (code);
+
+    console.log(code);
+    lines = code.split(" ");
+    for (var i = 0; i < lines.length; i++) {
+    	eval(lines[i]);
+    	setTimeout(function() {}, 1000);
+    	console.log(lines[i]);
+    }
+}
+
+function getFile(file) {
+	fisier_svg = file + '.svg';
+	fisier_xml = file + '.xml';
+}
+
+var el = $("#execute");
+el.click(function() {
+	$("#code").val();
+	// runCode($("#code").val());
+	// setInterval (timeout, 1000);
 });
 
+var load = $("#load");
+load.click(function() {
+	$("#file").val();
+	getFile($("#file").val());
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET",fisier_svg,false);
+	xhr.overrideMimeType("image/svg+xml");
+	xhr.send("");
+	document.getElementById("svg1").appendChild(xhr.responseXML.documentElement);
+
+	$(document).ready(function() {
+	/** work when all HTML loaded except images and DOM is ready **/
+		handleGetClick();
+		simulate();
+	});
+
+	teste($("#file").val());
+});
+
+var sistem = 0;
+
+// trei leduri cu o rezistenta
+function timeout (){
+	if (sistem > 5)
+		sistem = 0;
+	switch (sistem)
+	{
+		case 0:
+			components[0].digitalWrite(7,1);
+			break;
+		case 1:
+			components[0].digitalWrite(7,0);
+			break;
+		case 2:
+			components[0].digitalWrite(27,1);
+			break;
+		case 3:
+			components[0].digitalWrite(27,0);
+			break;
+		case 4:
+			components[0].digitalWrite(16,1);
+			break;
+		case 5:
+			components[0].digitalWrite(16,0);
+			break;
+	}
+	simulate ();
+	sistem++;
+}
+
+// cinci leduri colorate
+function timeout2 (){
+	if (sistem > 9)
+		sistem = 0;
+	switch (sistem)
+	{
+		case 0:
+			components[0].digitalWrite(4,1);
+			break;
+		case 1:
+			components[0].digitalWrite(4,0);
+			break;
+		case 2:
+			components[0].digitalWrite(24,1);
+			break;
+		case 3:
+			components[0].digitalWrite(24,0);
+			break;
+		case 4:
+			components[0].digitalWrite(12,1);
+			break;
+		case 5:
+			components[0].digitalWrite(12,0);
+			break;
+		case 6:
+			components[0].digitalWrite(16,1);
+			break;
+		case 7:
+			components[0].digitalWrite(16,0);
+			break;
+		case 8:
+			components[0].digitalWrite(6,1);
+			break;
+		case 9:
+			components[0].digitalWrite(6,0);
+			break;
+	}
+	simulate ();
+	sistem++;
+}
+
+// cinci leduri colorate
+function timeout3 (){
+	if (sistem > 1)
+		sistem = 0;
+	switch (sistem)
+	{
+		case 0:
+			components[0].digitalWrite(4,1);
+			components[0].digitalWrite(25,1);
+			components[0].digitalWrite(16,1);
+			components[0].digitalWrite(22,0);
+			components[0].digitalWrite(6,0);
+
+			break;
+		case 1:
+			components[0].digitalWrite(4,0);
+			components[0].digitalWrite(25,0);
+			components[0].digitalWrite(16,0);
+			components[0].digitalWrite(22,1);
+			components[0].digitalWrite(6,1);
+			break;
+		// case 2:
+		// 	components[0].digitalWrite(24,1);
+		// 	break;
+		// case 3:
+		// 	components[0].digitalWrite(24,0);
+		// 	break;
+		// case 4:
+		// 	components[0].digitalWrite(12,1);
+		// 	break;
+		// case 5:
+		// 	components[0].digitalWrite(12,0);
+		// 	break;
+		// case 6:
+		// 	components[0].digitalWrite(16,1);
+		// 	break;
+		// case 7:
+		// 	components[0].digitalWrite(16,0);
+		// 	break;
+		// case 8:
+		// 	components[0].digitalWrite(6,1);
+		// 	break;
+		// case 9:
+		// 	components[0].digitalWrite(6,0);
+		// 	break;
+	}
+	simulate ();
+	sistem++;
+}
+
+// cinci leduri colorate
+function timeout4 (){
+	if (sistem > 3)
+		sistem = 0;
+	switch (sistem)
+	{
+		case 0:
+			components[0].digitalWrite(4,1);
+			components[0].digitalWrite(25,1);
+			components[0].digitalWrite(16,1);
+			components[0].digitalWrite(22,0);
+			components[0].digitalWrite(6,0);
+
+			break;
+		case 1:
+			components[0].digitalWrite(4,0);
+			components[0].digitalWrite(25,0);
+			components[0].digitalWrite(16,0);
+			components[0].digitalWrite(22,1);
+			components[0].digitalWrite(6,1);
+			break;
+		case 2:
+			components[0].digitalWrite(4,0);
+			components[0].digitalWrite(25,0);
+			components[0].digitalWrite(16,0);
+			components[0].digitalWrite(22,1);
+			components[0].digitalWrite(6,1);
+			break;
+		case 3:
+			components[0].digitalWrite(4,0);
+			components[0].digitalWrite(25,0);
+			components[0].digitalWrite(16,0);
+			components[0].digitalWrite(22,1);
+			components[0].digitalWrite(6,1);
+			break;
+		// case 4:
+		// 	components[0].digitalWrite(12,1);
+		// 	break;
+		// case 5:
+		// 	components[0].digitalWrite(12,0);
+		// 	break;
+		// case 6:
+		// 	components[0].digitalWrite(16,1);
+		// 	break;
+		// case 7:
+		// 	components[0].digitalWrite(16,0);
+		// 	break;
+		// case 8:
+		// 	components[0].digitalWrite(6,1);
+		// 	break;
+		// case 9:
+		// 	components[0].digitalWrite(6,0);
+		// 	break;
+	}
+	simulate ();
+	sistem++;
+}
 
 
+function teste(file) {
+	switch(file)
+	{
+		case "demo":
+			setInterval(timeout, 1000);
+			break;
+		case "demo2":
+			setInterval(timeout2, 500);
+			break;
+		case "demo3":
+			setInterval(timeout3, 200);
+			break;
+		case "demo4":
+			setInterval(timeout4, 200);
+			break;
 
-
+	}
+}

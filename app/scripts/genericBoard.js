@@ -231,21 +231,12 @@ var pi = raspberryPiBoard();
 var led = new Led ();
 
 
-var components = [];
 
 var componentele = [];
 pi.componentId = componentele.length;
 componentele.push(pi);
 led.componentId = componentele.length;
 componentele.push(led);
-
-// console.log("test");
-// console.log(componentele);
-// console.log(led.getState());
-
-// var led2 = new Led();
-// led2.componentId = components.length;
-// components.push(led2);
 
 // var components_json = JSON.stringify(components);
 // var components_json = JSON.stringify(components, null, 4);

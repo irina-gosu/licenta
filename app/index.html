@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>app</title>
     <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=0.9">
     <link rel="shortcut icon" href="/favicon.ico">
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <!-- build:css(.) styles/vendor.css -->
@@ -26,24 +26,26 @@
 
 
     <div class="container">
+
       <div class="header">
-        <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
+        <ul class="nav nav-pills nav-justified">
+          <li class="active"><a href="#">Wyliodrin Board Simulator</a></li>
         </ul>
-        <h3 class="text-muted">app</h3>
       </div>
-
-
-
-
-    <object id="svg1" data="circuit.svg" type="image/svg+xml">
+<!--     <object id="svg1" data="circuit.svg" type="image/svg+xml">
     </object>
+ -->
 
-    <!-- <object id="svg1" data="board_cu_rezistenta.svg" type="image/svg+xml">
+      <textarea cols=15 rows=1 id="file"></textarea>
+      <button class="nav nav-pills" id="load">Load file</button>
+      <div style="width: 70%;" id="svg1"></div>
+      <button class="nav nav-pills nav-justified" id="execute">Execute Code</button>
+
+      <textarea cols=38 rows=10 id="code"></textarea>
+ <!--
+    <object id="svg1" data="board_cu_rezistenta.svg" type="image/svg+xml">
     </object> -->
-
+<!--
         <button type="button" id="muf" onClick={handleGetClick()} className="col-md-2 btn btn-default">Get</button>
 
        <h2>Data</h2>
@@ -54,15 +56,11 @@
       <button id="toggle-level2-btn">Toggle level2</button>
       <div id="json"></div>
       <h2>Data Collapsed</h2>
-      <div id="json-collapsed"></div>
+      <div id="json-collapsed"></div> -->
 
 
 
     <!-- <textarea cols=100 rows=100 id="content"> </textarea> -->
-
-      <div class="footer">
-        <p><span class="glyphicon glyphicon-heart"></span> from the Yeoman team</p>
-      </div>
 
     </div>
 
@@ -102,6 +100,8 @@
         <!-- endbuild -->
 
         <!-- build:js({app,.tmp}) scripts/main.js -->
+
+        <!-- // <script src="scripts/acorn_interpreter.js"></script> -->
         <script src="scripts/piese.js"></script>
         <script src="scripts/raspberryPiBoard.js"></script>
         <script src="scripts/genericBoard.js"></script>

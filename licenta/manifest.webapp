@@ -18,6 +18,11 @@
   "installs_allowed_from": [
     "*"
   ],
+  "permissions": {
+    "camera": {
+      "description": "Required for accessing cameras on the device."
+    }
+  },
   "locales": {
     "es": {
       "name": "Aplicación vacía privilegiada",

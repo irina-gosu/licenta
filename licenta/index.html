@@ -4,20 +4,11 @@
     <meta charset="utf-8">
     <title>app</title>
     <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
-    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=0.9">
+    <link rel="shortcut icon" href="/6df2b309.favicon.ico">
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-    <!-- build:css(.) styles/vendor.css -->
-
-    <link rel="stylesheet" href="bower_components/jquery-jsonview/dist/jquery.jsonview.css
-" />
-    <!-- bower:css -->
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-    <!-- endbower -->
-    <!-- endbuild -->
-    <!-- build:css(.tmp) styles/main.css -->
-    <link rel="stylesheet" href="styles/main.css">
-    <!-- endbuild -->
+    <link rel="stylesheet" href="styles/9c307a9d.vendor.css">
+    <link rel="stylesheet" href="styles/a5896f90.main.css">
   </head>
   <body>
     <!--[if lt IE 10]>
@@ -26,24 +17,26 @@
 
 
     <div class="container">
+
       <div class="header">
-        <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
+        <ul class="nav nav-pills nav-justified">
+          <li class="active"><a href="#">Wyliodrin Board Simulator</a></li>
         </ul>
-        <h3 class="text-muted">app</h3>
       </div>
-
-
-
-
-    <object id="svg1" data="circuit.svg" type="image/svg+xml">
+<!--     <object id="svg1" data="circuit.svg" type="image/svg+xml">
     </object>
+ -->
 
-    <!-- <object id="svg1" data="board_cu_rezistenta.svg" type="image/svg+xml">
+      <textarea cols=15 rows=1 id="file"></textarea>
+      <button class="nav nav-pills" id="load">Load file</button>
+      <div style="width: 70%;" id="svg1"></div>
+      <button class="nav nav-pills nav-justified" id="execute">Execute Code</button>
+
+      <textarea cols=38 rows=10 id="code"></textarea>
+ <!--
+    <object id="svg1" data="board_cu_rezistenta.svg" type="image/svg+xml">
     </object> -->
-
+<!--
         <button type="button" id="muf" onClick={handleGetClick()} className="col-md-2 btn btn-default">Get</button>
 
        <h2>Data</h2>
@@ -54,27 +47,16 @@
       <button id="toggle-level2-btn">Toggle level2</button>
       <div id="json"></div>
       <h2>Data Collapsed</h2>
-      <div id="json-collapsed"></div>
+      <div id="json-collapsed"></div> -->
 
 
 
     <!-- <textarea cols=100 rows=100 id="content"> </textarea> -->
 
-      <div class="footer">
-        <p><span class="glyphicon glyphicon-heart"></span> from the Yeoman team</p>
-      </div>
-
     </div>
 
 
-    <!-- build:js(.) scripts/vendor.js -->
-    <!-- bower:js -->
-    <script src="bower_components/jquery/dist/jquery.js"></script>
-    <script src="bower_components/jquery.xml2json/src/jquery.xml2json.js"></script>
-    <script src="bower_components/lodash/lodash.js"></script>
-    <script src="bower_components/jquery-jsonview/dist/jquery.jsonview.js"></script>
-    <!-- endbower -->
-    <!-- endbuild -->
+    <script src="scripts/71abbb5e.vendor.js"></script>
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
     <script>
@@ -86,26 +68,8 @@
       ga('create','UA-XXXXX-X');ga('send','pageview');
     </script>
 
-        <!-- build:js(.) scripts/plugins.js -->
-        <script src="bower_components/bootstrap/js/affix.js"></script>
-        <script src="bower_components/bootstrap/js/alert.js"></script>
-        <script src="bower_components/bootstrap/js/dropdown.js"></script>
-        <script src="bower_components/bootstrap/js/tooltip.js"></script>
-        <script src="bower_components/bootstrap/js/modal.js"></script>
-        <script src="bower_components/bootstrap/js/transition.js"></script>
-        <script src="bower_components/bootstrap/js/button.js"></script>
-        <script src="bower_components/bootstrap/js/popover.js"></script>
-        <script src="bower_components/bootstrap/js/carousel.js"></script>
-        <script src="bower_components/bootstrap/js/scrollspy.js"></script>
-        <script src="bower_components/bootstrap/js/collapse.js"></script>
-        <script src="bower_components/bootstrap/js/tab.js"></script>
-        <!-- endbuild -->
+        <script src="scripts/cb7562c6.plugins.js"></script>
 
-        <!-- build:js({app,.tmp}) scripts/main.js -->
-        <script src="scripts/piese.js"></script>
-        <script src="scripts/raspberryPiBoard.js"></script>
-        <script src="scripts/genericBoard.js"></script>
-        <script src="scripts/main.js"></script>
-        <!-- endbuild -->
+        <script src="scripts/5ccb014a.main.js"></script>
 </body>
 </html>
