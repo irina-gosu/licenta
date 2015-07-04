@@ -87,3 +87,11 @@ body {
     border-bottom: 0;
   }
 }
+
+
+rect.btn {
+  stroke:#17ff8b;
+  fill:#ff114d;
+  fill-opacity:100;
+  stroke-opacity:100;
+}

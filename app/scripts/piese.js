@@ -79,8 +79,8 @@ function Resistor () {
 	this.name = "Resistor";
 	this.label = "";
 	this.componentId = -1;
-	this.pin0 = new Pin (["input", "output"], "input", 0);
-	this.pin1 = new Pin (["input", "output"], "output", 1);
+	this.pin0 = new Pin (["input", "output", "OUT0"], "input", 0);
+	this.pin1 = new Pin (["input", "output", "OUT0"], "output", 1);
 	this.pins = [];
 	this.pins.push(this.pin0);
 	this.pins.push(this.pin1);
@@ -89,34 +89,74 @@ function Resistor () {
 Resistor.prototype.update_values = function() {
 	var modif = 0;
 	if (this.pin0.currentMode === "input" && this.pin1.currentMode === "output") {
+		// console.log("[pin0=output] TRECEM REZISTENTA IN currentMode = OUTPUT");
 		if (this.pin0.value != this.pin0.value) {
 			this.pin0.setPin(this.pin0.value);
 		}
 	}
 	if (this.pin0.currentMode === "output" && this.pin1.currentMode === "input") {
+		// console.log("[pin0=input] TRECEM REZISTENTA IN currentMode = OUTPUT");
 		if (this.pin1.value != this.pin0.value) {
 			this.pin0.setPin(this.pin1.value);
 		}
 	}
+
+	if (this.pin0.currentMode === "OUT0") {
+		this.pin1.currentMode = "output";
+		// console.log("[pin0=OUT0] TRECEM REZISTENTA IN currentMode = OUTPUT");
+		if (this.pin1.value != this.pin0.value) {
+			this.pin1.setPin(this.pin0.value);
+			modif = 1;
+		}
+		// if (this.pin1.value === Z) {
+		// 	this.pin1.value = this.pin0.value;
+		// 	modif = 1;
+		// }
+	}
+
+	if (this.pin1.currentMode === "OUT0") {
+		// console.log("[pin1=OUT0!!!] TRECEM REZISTENTA IN currentMode = OUTPUT");
+		this.pin0.currentMode = "output";
+		if (this.pin1.value != this.pin0.value) {
+			this.pin0.setPin(this.pin1.value);
+			modif = 1;
+		}
+		// if (this.pin0.value === Z) {
+		// 	this.pin0.value = this.pin1.value;
+		// 	modif = 1;
+		// }
+	}
+
 	return modif;
 };
 
 function Button () {
 	this.name = "Button";
 	this.label = "";
-	this.input = new Pin (["input"], "input", 0);
-	this.output = new Pin (["output"], "output", 1);
-	this.state = OFF;
+	this.pin0 = new Pin (["input", "output"], "output", 0);
+	this.pin1 = new Pin (["OUT1"], "OUT1", 1);
+	//this.state = OFF;
+	// this.pin0.setPin(Z);
 	this.pins = [];
-	this.pins.push(this.input);
-	this.pins.push(this.output);
+	this.pins.push(this.pin0);
+	this.pins.push(this.pin1);
+	this.pins[0].setPin(Z);
 	this.componentId = -1;
+	// this.released();
 }
-Button.prototype.pushed = function(state) {
-	if (state === 1 & this.output.neighbors != null) { //apasat
-		this.output.value = this.input.value;
-		this.output.neighbors.push(new Neighbor (this.componentId, this.input));
+Button.prototype.pushed = function() {
+	var modif = 0;
+	if (this.pin0.neighbors != null) { //apasat
+		this.pin0.value = this.pin1.value;
+		modif = 1;
 	}
-	// return this.output; // reuturnez ceva sau nu ?
+	return modif;
 };
-
+Button.prototype.released = function() {
+	var modif = 0;
+	if (this.pin0.neighbors != null) { //apasat
+		this.pin0.setPin(Z);
+		modif = 1;
+	}
+	return modif;
+};

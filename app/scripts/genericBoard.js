@@ -9,44 +9,6 @@ var INPUT = 0;
 var OUTPUT = 1;
 
 
-// function GPIO (value, mode) {
-// 	this.mode = mode;
-// 	this.value = value;
-//     return this;
-// }
-// GPIO.prototype.getMode = function() {
-// 	return this.mode;
-// };
-// GPIO.prototype.setMode = function(mode) {
-// 	this.mode = mode;
-// };
-
-// function PWM (value) {
-// 	if (value > maxPWM)
-// 		value = maxPWM;
-// 	if (value < 0)
-// 		value = 0;
-// 	this.value = value;
-// }
-
-// function AIO (value, mode) {
-// 	this.value = value;
-// 	this.mode = mode;
-// }
-
-// function VCC3 () {
-// 	this.value = vcc_value3;
-// }
-
-// function VCC5 () {
-// 	this.value = vcc_value5;
-// }
-
-// function GND (gnd_value) {
-// 	this.value = value;
-// }
-
-
 function returnPin (currentMode, value, number) {
 	this.mode = currentMode;
 	this.value = value;
@@ -78,7 +40,7 @@ Board.prototype.searchPin = function(number) {
 
 Board.prototype.digitalRead = function(pin_nr) {
 	this.pinMode(pin_nr, INPUT);
-	return this.searchPin(pin).value;
+	return this.searchPin(pin_nr).value;
 };
 
 Board.prototype.digitalWrite = function(pin_nr, val) {
@@ -149,19 +111,35 @@ Board.prototype.dump = function() {
 function connectPins (component1, pin1, component2, pin2) {
 	// consideram componenta1/pin1 = output; componenta2/pin2 input
 	// pin1 si pin2 sunt obiecte Pin, nu numere de pini
-// console.log("component1 " + pin1.currentMode);
+// console.log("component1 " + pin1.currentMode+ " "+component1.name + " ||| component2 " + pin2.currentMode + " "+component2.name);
 // console.log(component1);
-// console.log("component2 " + pin2.currentMode + " "+component2.name);
 // console.log(component2);
 
 	switch(pin1.currentMode.toLowerCase()) {
-	case "OUT0".toLowerCase():
-		if (pin2.currentMode.toLowerCase() === "OUT0".toLowerCase()) {
+	case "OUT1".toLowerCase():
+		if (pin2.currentMode.toLowerCase() === "OUT1".toLowerCase()) {
 			pin2.neighbors.push(new Neighbor (component1.componentId, pin1));
 
 		} else {
 			console.log("This is wrong. This will break. We are not doing this. ");
 			return;
+		}
+
+	break;
+	case "OUT0".toLowerCase():
+		if (pin2.currentMode.toLowerCase() === "OUT0".toLowerCase()) {
+			pin2.neighbors.push(new Neighbor (component1.componentId, pin1));
+
+		} else {
+			//aici trec rezistenta in OUT0
+			if (pin2.pin_capacities.indexOf("OUT0") != -1) {
+				pin2.currentMode = "OUT0";
+				pin2.neighbors.push(new Neighbor (component1.componentId, pin1));
+				component2.update_values();
+			} else {
+				console.log("This is wrong. This will break. We are not doing this. ");
+				return;
+			}
 		}
 	break;
 	case "GPIO_IN".toLowerCase():

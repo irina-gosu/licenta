@@ -18,7 +18,11 @@ function getPinFromComponent(component, pin_name) {
 	if (component.name === "raspberryPiBoard") {
 		if (pin_name.toLowerCase() === "3V3".toLowerCase()
 			|| pin_name.toLowerCase() === "5V".toLowerCase()) {
-			return nothing;
+			for (var i = 0; i < component.pins.length; i++) {
+				if (component.pins[i].pin_capacities[0] === "OUT1") {
+					return component.pins[i];
+				}
+			}
 		}
 		if (pin_name === "GND") {
 			for (var i = 0; i < component.pins.length; i++) {
@@ -49,11 +53,11 @@ function getPinFromComponent(component, pin_name) {
 
 	// !!!!!!!! verifica anodul si catodul la buton
 	if (component.name === "Button") {
-		if (pin_name === "cathode") {
-			return component.output;
+		if (pin_name === "leg1") {
+			return component.pin1;
 		} else {
-			if (pin_name === "anode") {
-				return component.input;
+			if (pin_name === "leg0") {
+				return component.pin0;
 			} else console.log("Component Button does not have pin "+ pin_name);
 		}
 	}
@@ -73,7 +77,7 @@ function parse_netlist(json) {
 	for (var i = 0; i < json.net.length; i++) {
 		var connection = json.net[i].connector;
 		if (connection.length > 1) { // am pini de legat intre ei
-
+			var index_componente = [];
 			var index = []; // index in array-ul de components
 			var pins = []; //arrayul de pini. direct pinii asa
 
@@ -86,6 +90,7 @@ function parse_netlist(json) {
 						found = 1;
 						comp = components[k];
 						index.push(k);
+						index_componente.push(comp);
 						break;
 					}
 				}
@@ -100,7 +105,7 @@ function parse_netlist(json) {
 							initializare_led(comp, connection[j]);
 							last_led = connection[j].part.id; //componentID
 						} else {
-							if (connection[j].part.title.toLowerCase() === "Button") {
+							if (connection[j].part.title.toLowerCase() === "Pushbutton".toLowerCase()) {
 								comp = new Button();
 							} else {
 								if (connection[j].part.title.substr(connection[j].part.title.length - 8) === "Resistor") {
@@ -114,6 +119,7 @@ function parse_netlist(json) {
 					comp.label = connection[j].part.label;
 					comp.componentId = connection[j].part.id;
 					components.push(comp);
+					index_componente.push(comp);
 					index.push(components.length - 1);
 				}
 				// parsare pt pin
@@ -126,14 +132,39 @@ function parse_netlist(json) {
 					connectPins(components[index[0]], pins[0], components[index[1]], pins[1]);
 				}
 			} else {
+				// console.log(index_componente);
 				for (var j = 1; j < index.length; j++) {
+
+					var but = -1;
+					var res = -1, piboard = -1;
+					// console.log(index_componente[j].name);
+					switch(index_componente[j].name.toLowerCase()) {
+						case "Button".toLowerCase():
+							but = j;
+						break;
+						case "Resistor".toLowerCase():
+							res = j;
+						break;
+						case "raspberryPiBoard".toLowerCase():
+							piboard = j;
+						break;
+						default:
+						//console.log(index_componente[j].name);
+					}
+
 					if (components[index[0]] === components[index[j]]) {
 						if (pins[0].number != pins[j].number) {
 							connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
 						}
 
 					} else {
-						connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
+
+						//aici trebuie sa fac conexiunea mai ciudata
+						if (but != -1) {
+							connectPins(components[index[j]], pins[j], components[index[0]], pins[0]);
+						} else {
+							connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
+						}
 					}
 				}
 			}
@@ -147,6 +178,12 @@ function parse_netlist(json) {
 			if (components[i].pins[j].currentMode === "OUT1")
 				components[i].pins[j].value = 1;
 		}
+		if (components[i].name === "Resistor") {
+			if (components[i].update_values()) {
+				// simulate();
+			}
+		}
+
 	}
 	console.log(components);
 }
@@ -182,6 +219,8 @@ function bfs(node, comp) {
 	}
 	return modified;
 }
+
+
 
 function change_led (led, state) {
 	if (state) {
@@ -309,6 +348,11 @@ load.click(function() {
 	});
 
 	teste($("#file").val());
+
+$("#svg1 svg g[partID=71190] ").prepend("<button class=\"nav nav-pills\" id=\"ceva\">Load file</button>");
+	// $("#svg1 svg g[partID=71190] ").prepend("<rect class=\"btn\" x=\"25\" y=\"42\" width=\"20\" height=\"10\" onclick=\"alert('click!')\" />");
+	// $("#svg1 svg g[partID=71190] ").onclick = butonClick;
+
 });
 
 var sistem = 0;
@@ -404,30 +448,6 @@ function timeout3 (){
 			components[0].digitalWrite(22,1);
 			components[0].digitalWrite(6,1);
 			break;
-		// case 2:
-		// 	components[0].digitalWrite(24,1);
-		// 	break;
-		// case 3:
-		// 	components[0].digitalWrite(24,0);
-		// 	break;
-		// case 4:
-		// 	components[0].digitalWrite(12,1);
-		// 	break;
-		// case 5:
-		// 	components[0].digitalWrite(12,0);
-		// 	break;
-		// case 6:
-		// 	components[0].digitalWrite(16,1);
-		// 	break;
-		// case 7:
-		// 	components[0].digitalWrite(16,0);
-		// 	break;
-		// case 8:
-		// 	components[0].digitalWrite(6,1);
-		// 	break;
-		// case 9:
-		// 	components[0].digitalWrite(6,0);
-		// 	break;
 	}
 	simulate ();
 	sistem++;
@@ -435,7 +455,7 @@ function timeout3 (){
 
 // cinci leduri colorate
 function timeout4 (){
-	if (sistem > 3)
+	if (sistem > 32)
 		sistem = 0;
 	switch (sistem)
 	{
@@ -504,9 +524,21 @@ function teste(file) {
 		case "demo3":
 			setInterval(timeout3, 200);
 			break;
-		case "demo4":
-			setInterval(timeout4, 200);
+		case "buton":
+			// setInterval(timeout4, 200);
+
 			break;
 
 	}
 }
+// var butonId = 71190;
+function butonClick () {
+	console.log("ceva");
+}
+
+// var but = document.createElement("button");
+
+// $("#svg1 svg g[partID=71190] ").append(<rect class="btn" x="0" y="0" width="10" height="10" onclick="alert('click!')" />);
+
+
+
