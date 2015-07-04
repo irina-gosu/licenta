@@ -46,6 +46,7 @@ Board.prototype.digitalRead = function(pin_nr) {
 Board.prototype.digitalWrite = function(pin_nr, val) {
 	this.pinMode(pin_nr, OUTPUT);
 	this.searchPin(pin_nr).value = val;
+	simulate();
 };
 
 Board.prototype.pinMode = function(pin_nr, mode) {

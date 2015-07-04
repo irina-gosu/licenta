@@ -5,7 +5,7 @@ var ON = 1;
 var OFF = 0;
 
 var GND = 0;
-var randomValue = -25;
+var randomValue = -225;
 var vcc_value = 1;
 
 
@@ -22,6 +22,7 @@ function Pin (pin_capacities, currentMode, number) {
 	this.connected = 0;
 	this.pin_capacities = pin_capacities;
 	this.neighbors = [];
+	this.canModify = 1;
 	return this;
 }
 
@@ -149,6 +150,12 @@ Button.prototype.pushed = function() {
 	if (this.pin0.neighbors != null) { //apasat
 		this.pin0.value = this.pin1.value;
 		modif = 1;
+		for (var i = 0; i < this.pin0.neighbors.length; i++) {
+			this.pin0.neighbors[i].neighborPin.setPin(this.pin0.value);
+			this.pin0.neighbors[i].neighborPin.canModify = 0;
+		}
+		// this.pin0.canModify = 0;
+		console.log("buton apasat");
 	}
 	return modif;
 };
@@ -157,6 +164,12 @@ Button.prototype.released = function() {
 	if (this.pin0.neighbors != null) { //apasat
 		this.pin0.setPin(Z);
 		modif = 1;
+		for (var i = 0; i < this.pin0.neighbors.length; i++) {
+			this.pin0.neighbors[i].neighborPin.setPin(0);
+			this.pin0.neighbors[i].neighborPin.canModify = 1;
+		}
+		// this.pin0.canModify = 1;
+		console.log("buton eliberat");
 	}
 	return modif;
 };

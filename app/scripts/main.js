@@ -4,6 +4,9 @@ var nothing = -1;
 var last_led = -1;
 var fisier_xml = '';
 var fisier_svg = '';
+var butonul = -1;
+var butonulId = -1;
+
 
 function handleGetClick(){
 	// $.get('circuit.xml', function(xml){
@@ -132,11 +135,13 @@ function parse_netlist(json) {
 					connectPins(components[index[0]], pins[0], components[index[1]], pins[1]);
 				}
 			} else {
-				// console.log(index_componente);
+				console.log(index_componente);
+
+				var but = -1;
+				var res = -1, piboard = -1;
+
 				for (var j = 1; j < index.length; j++) {
 
-					var but = -1;
-					var res = -1, piboard = -1;
 					// console.log(index_componente[j].name);
 					switch(index_componente[j].name.toLowerCase()) {
 						case "Button".toLowerCase():
@@ -149,7 +154,6 @@ function parse_netlist(json) {
 							piboard = j;
 						break;
 						default:
-						//console.log(index_componente[j].name);
 					}
 
 					if (components[index[0]] === components[index[j]]) {
@@ -161,8 +165,10 @@ function parse_netlist(json) {
 
 						//aici trebuie sa fac conexiunea mai ciudata
 						if (but != -1) {
+							console.log("am buton bus");
 							connectPins(components[index[j]], pins[j], components[index[0]], pins[0]);
 						} else {
+							console.log("nu am buton");
 							connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
 						}
 					}
@@ -179,9 +185,11 @@ function parse_netlist(json) {
 				components[i].pins[j].value = 1;
 		}
 		if (components[i].name === "Resistor") {
-			if (components[i].update_values()) {
-				// simulate();
-			}
+			components[i].update_values();
+		}
+		if (components[i].name === "Button") {
+			butonul = i;
+			butonulId = components[i].componentId;
 		}
 
 	}
@@ -201,17 +209,23 @@ function initializare_led(led, comp) {
 function bfs(node, comp) {
 	var queue = [],
 		next = node;
+	if (comp.name === "Button") {
+		return;
+	}
 
 	var modified = 0;
 	while (next) {
 		if (next.neighbors) {
 			for (var i = 0; i < next.neighbors.length; i++) {
-				if (next.neighbors[i].neighborPin.value != node.value) {
-					next.neighbors[i].neighborPin.setPin(node.value);
-					queue.push(next.neighbors[i].neighborPin);
-					modified = 1;
-					if (next.neighbors[i].neighborPin.value != node.value)
-						console.log("funck yyou");;
+				// if (next.neighbors[i].neighborPin.number === 4) {
+				// 	console.log("vecin = "+next.neighbors[i].neighborPin.value);
+				// 	console.log("node = "+node.value);
+				// }
+				if (next.neighbors[i].neighborPin.value != node.value && next.neighbors[i].neighborPin.canModify) {
+						next.neighbors[i].neighborPin.setPin(node.value);
+						queue.push(next.neighbors[i].neighborPin);
+						modified = 1;
+						console.log("buton > pin");
 				}
 			}
 		}
@@ -231,8 +245,30 @@ function change_led (led, state) {
 	}
 }
 
+function runLedCode() {
+	console.log(components);
+	var gpio_placa = components[0].digitalRead(4);
+	var gpio_led = components[0].digitalRead(25);
+	console.log(gpio_led);
+	if (gpio_placa === 1) {
+
+		if (gpio_led != 1){
+
+			components[0].digitalWrite(25, 1);
+		}
+	} else {
+		if (gpio_led === 1)
+			components[0].digitalWrite(25, 0);
+	}
+}
+
 function simulate () {
+	// console.log(components);
+	if (components.length === 0) {
+		return;
+	}
 	var modified = 1;
+	console.log("am intrat");
 	while (modified === 1) {
 		modified = 0;
 		var mod = 0;
@@ -245,13 +281,16 @@ function simulate () {
 				mod = bfs(components[i].pins[j], components[i]);
 				modified = (mod  === 1 || modified === 1) ? 1 : 0;
 			}
-			if (components[i].name === "Resistor") {
-				mod = components[i].update_values();
-				modified = (mod  === 1 || modified === 1) ? 1 : 0;
-			}
+			// if (components[i].name === "Resistor") {
+			// 	mod = components[i].update_values();
+			// 	modified = (mod  === 1 || modified === 1) ? 1 : 0;
+			// }
 
 		}
 	}
+	runLedCode();
+
+	console.log("am iesit");
 
 	for (var i = 0; i < components.length; i++) {
 		if (components[i].name === "Led") {
@@ -330,13 +369,27 @@ el.click(function() {
 	// setInterval (timeout, 1000);
 });
 
+var push = 0;
+function pushButton() {
+	push++;
+	if (butonul != -1) {
+		if (push % 2 === 0) {
+			components[butonul].released();
+		} else {
+			//push
+			components[butonul].pushed();
+		}
+		simulate();
+	}
+}
+
 var load = $("#load");
 load.click(function() {
 	$("#file").val();
 	getFile($("#file").val());
 
 	var xhr = new XMLHttpRequest();
-	xhr.open("GET",fisier_svg,false);
+	xhr.open("GET", fisier_svg, false);
 	xhr.overrideMimeType("image/svg+xml");
 	xhr.send("");
 	document.getElementById("svg1").appendChild(xhr.responseXML.documentElement);
@@ -349,7 +402,14 @@ load.click(function() {
 
 	teste($("#file").val());
 
-$("#svg1 svg g[partID=71190] ").prepend("<button class=\"nav nav-pills\" id=\"ceva\">Load file</button>");
+	if ($("#file").val() === "buton") {
+		var but = $("#push");
+		but.click(function() {
+			pushButton();
+		});
+	}
+
+// $("#svg1 svg g[partID=71190] wefwf").prepend("<button class=\"nav nav-pills\" id=\"ceva\">Load file</button>");
 	// $("#svg1 svg g[partID=71190] ").prepend("<rect class=\"btn\" x=\"25\" y=\"42\" width=\"20\" height=\"10\" onclick=\"alert('click!')\" />");
 	// $("#svg1 svg g[partID=71190] ").onclick = butonClick;
 
@@ -427,7 +487,7 @@ function timeout2 (){
 	sistem++;
 }
 
-// cinci leduri colorate
+// cinci leduri rosii
 function timeout3 (){
 	if (sistem > 1)
 		sistem = 0;
@@ -453,9 +513,9 @@ function timeout3 (){
 	sistem++;
 }
 
-// cinci leduri colorate
+// cinci leduri rosii, test neterminat
 function timeout4 (){
-	if (sistem > 32)
+	if (sistem > 4)
 		sistem = 0;
 	switch (sistem)
 	{
@@ -488,24 +548,7 @@ function timeout4 (){
 			components[0].digitalWrite(22,1);
 			components[0].digitalWrite(6,1);
 			break;
-		// case 4:
-		// 	components[0].digitalWrite(12,1);
-		// 	break;
-		// case 5:
-		// 	components[0].digitalWrite(12,0);
-		// 	break;
-		// case 6:
-		// 	components[0].digitalWrite(16,1);
-		// 	break;
-		// case 7:
-		// 	components[0].digitalWrite(16,0);
-		// 	break;
-		// case 8:
-		// 	components[0].digitalWrite(6,1);
-		// 	break;
-		// case 9:
-		// 	components[0].digitalWrite(6,0);
-		// 	break;
+
 	}
 	simulate ();
 	sistem++;
