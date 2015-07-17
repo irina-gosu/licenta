@@ -1,4 +1,3 @@
-
 var components = [];
 var nothing = -1;
 var last_led = -1;
@@ -6,6 +5,8 @@ var fisier_xml = '';
 var fisier_svg = '';
 var butonul = -1;
 var butonulId = -1;
+var editor = ace.edit("code");
+
 
 
 function handleGetClick(){
@@ -135,8 +136,6 @@ function parse_netlist(json) {
 					connectPins(components[index[0]], pins[0], components[index[1]], pins[1]);
 				}
 			} else {
-				console.log(index_componente);
-
 				var but = -1;
 				var res = -1, piboard = -1;
 
@@ -165,10 +164,8 @@ function parse_netlist(json) {
 
 						//aici trebuie sa fac conexiunea mai ciudata
 						if (but != -1) {
-							console.log("am buton bus");
 							connectPins(components[index[j]], pins[j], components[index[0]], pins[0]);
 						} else {
-							console.log("nu am buton");
 							connectPins(components[index[0]], pins[0], components[index[j]], pins[j]);
 						}
 					}
@@ -194,6 +191,7 @@ function parse_netlist(json) {
 
 	}
 	console.log(components);
+	//findCamera();
 }
 
 
@@ -217,15 +215,11 @@ function bfs(node, comp) {
 	while (next) {
 		if (next.neighbors) {
 			for (var i = 0; i < next.neighbors.length; i++) {
-				// if (next.neighbors[i].neighborPin.number === 4) {
-				// 	console.log("vecin = "+next.neighbors[i].neighborPin.value);
-				// 	console.log("node = "+node.value);
-				// }
+
 				if (next.neighbors[i].neighborPin.value != node.value && next.neighbors[i].neighborPin.canModify) {
 						next.neighbors[i].neighborPin.setPin(node.value);
 						queue.push(next.neighbors[i].neighborPin);
 						modified = 1;
-						console.log("buton > pin");
 				}
 			}
 		}
@@ -246,19 +240,21 @@ function change_led (led, state) {
 }
 
 function runLedCode() {
-	console.log(components);
-	var gpio_placa = components[0].digitalRead(4);
-	var gpio_led = components[0].digitalRead(25);
-	console.log(gpio_led);
-	if (gpio_placa === 1) {
+	if (butonul != -1) {
+		var gpio_placa = components[0].digitalRead(4);
+		var gpio_led = components[0].digitalRead(25);
 
-		if (gpio_led != 1){
-
-			components[0].digitalWrite(25, 1);
+		if (gpio_placa === 1) {
+			if (gpio_led != 1){
+				components[0].digitalWrite(25, 1);
+				//switchTheLight(true);
+			}
+		} else {
+			if (gpio_led === 1){
+				components[0].digitalWrite(25, 0);
+				//switchTheLight(false);
+			}
 		}
-	} else {
-		if (gpio_led === 1)
-			components[0].digitalWrite(25, 0);
 	}
 }
 
@@ -268,7 +264,6 @@ function simulate () {
 		return;
 	}
 	var modified = 1;
-	console.log("am intrat");
 	while (modified === 1) {
 		modified = 0;
 		var mod = 0;
@@ -281,16 +276,9 @@ function simulate () {
 				mod = bfs(components[i].pins[j], components[i]);
 				modified = (mod  === 1 || modified === 1) ? 1 : 0;
 			}
-			// if (components[i].name === "Resistor") {
-			// 	mod = components[i].update_values();
-			// 	modified = (mod  === 1 || modified === 1) ? 1 : 0;
-			// }
-
 		}
 	}
 	runLedCode();
-
-	console.log("am iesit");
 
 	for (var i = 0; i < components.length; i++) {
 		if (components[i].name === "Led") {
@@ -301,60 +289,15 @@ function simulate () {
 				// var ledul = $(document.querySelector("#svg1").getSVGDocument()).find('g[partID="'+components[i].componentId+'"] #color_path32').attr('fill', led_off);
 				change_led(components[i], OFF);
 			}
-			// last_led = components[i];
 		}
 	}
 
-	if (last_led != -1) {
-		// flash_light();
-		console.log("ledul "+ last_led);
-	}
 }
 
-// function flash_light() {
-// 	var options = {
-// 	  camera: navigator.mozCameras.getListOfCameras()[0]
-// 	};
-// 	navigator.mozCameras.getCamera(options, onSuccess);
-// }
-
-// // var currentCamera = null;
-// function onSuccess(camera) {
-// 	var flash = camera.capabilities.flashModes;
-
-// 		camera.flashMode = 'on';
-// 		console.log('flashModes: ' + flash);
-
-// 	// flash.forEach(function ('on') {
-// 	// 	console.log();
-// 	// 	camera.flashMode = 'on';
-// 	// 	console.log('flashModes: ' + flash);
-// 	// });
-// };
-
-// $(document).ready(function() {
-// //* work when all HTML loaded except images and DOM is ready *
-// 	handleGetClick();
-// 	simulate();
-// });
-
-// var xhr = new XMLHttpRequest();
-// xhr.open("GET",fisier_svg,false);
-// xhr.overrideMimeType("image/svg+xml");
-// xhr.send("");
-// document.getElementById("svg1").appendChild(xhr.responseXML.documentElement);
 var lines;
 
 function runCode(code) {
-	// eval (code);
-
-    console.log(code);
-    lines = code.split(" ");
-    for (var i = 0; i < lines.length; i++) {
-    	eval(lines[i]);
-    	setTimeout(function() {}, 1000);
-    	console.log(lines[i]);
-    }
+	eval (code);
 }
 
 function getFile(file) {
@@ -364,9 +307,9 @@ function getFile(file) {
 
 var el = $("#execute");
 el.click(function() {
-	$("#code").val();
-	// runCode($("#code").val());
-	// setInterval (timeout, 1000);
+	var cod = editor.getSession().getValue();
+	console.log(cod);
+	runCode(cod);
 });
 
 var push = 0;
@@ -394,13 +337,14 @@ load.click(function() {
 	xhr.send("");
 	document.getElementById("svg1").appendChild(xhr.responseXML.documentElement);
 
-	$(document).ready(function() {
-	/** work when all HTML loaded except images and DOM is ready **/
-		handleGetClick();
-		simulate();
-	});
-
+	handleGetClick();
 	teste($("#file").val());
+
+	// $(document).ready(function() {
+	// 	handleGetClick();
+	// 	simulate();
+	// 	teste($("#file").val());
+	// });
 
 	if ($("#file").val() === "buton") {
 		var but = $("#push");
@@ -408,180 +352,89 @@ load.click(function() {
 			pushButton();
 		});
 	}
-
-// $("#svg1 svg g[partID=71190] wefwf").prepend("<button class=\"nav nav-pills\" id=\"ceva\">Load file</button>");
-	// $("#svg1 svg g[partID=71190] ").prepend("<rect class=\"btn\" x=\"25\" y=\"42\" width=\"20\" height=\"10\" onclick=\"alert('click!')\" />");
-	// $("#svg1 svg g[partID=71190] ").onclick = butonClick;
-
 });
 
-var sistem = 0;
 
-// trei leduri cu o rezistenta
-function timeout (){
-	if (sistem > 5)
-		sistem = 0;
-	switch (sistem)
-	{
-		case 0:
-			components[0].digitalWrite(7,1);
-			break;
-		case 1:
-			components[0].digitalWrite(7,0);
-			break;
-		case 2:
-			components[0].digitalWrite(27,1);
-			break;
-		case 3:
-			components[0].digitalWrite(27,0);
-			break;
-		case 4:
-			components[0].digitalWrite(16,1);
-			break;
-		case 5:
-			components[0].digitalWrite(16,0);
-			break;
-	}
-	simulate ();
-	sistem++;
-}
+// function teste(file) {
+// 	switch(file.toLowerCase())
+// 	{
+// 		case "demo".toLowerCase():
+// 			setInterval(timeout, 1000);
+// 			break;
+// 		case "demo2".toLowerCase():
+// 			setInterval(timeout2, 500);
+// 			break;
+// 		case "demo3".toLowerCase():
+// 			setInterval(timeout3, 200);
+// 			break;
+// 		case "buton".toLowerCase():
+// 			// setInterval(timeout4, 200);
+// 			break;
+// 		case "simple".toLowerCase():
+// 			// setInterval(timeout4, 200);
+// 			break;
 
-// cinci leduri colorate
-function timeout2 (){
-	if (sistem > 9)
-		sistem = 0;
-	switch (sistem)
-	{
-		case 0:
-			components[0].digitalWrite(4,1);
-			break;
-		case 1:
-			components[0].digitalWrite(4,0);
-			break;
-		case 2:
-			components[0].digitalWrite(24,1);
-			break;
-		case 3:
-			components[0].digitalWrite(24,0);
-			break;
-		case 4:
-			components[0].digitalWrite(12,1);
-			break;
-		case 5:
-			components[0].digitalWrite(12,0);
-			break;
-		case 6:
-			components[0].digitalWrite(16,1);
-			break;
-		case 7:
-			components[0].digitalWrite(16,0);
-			break;
-		case 8:
-			components[0].digitalWrite(6,1);
-			break;
-		case 9:
-			components[0].digitalWrite(6,0);
-			break;
-	}
-	simulate ();
-	sistem++;
-}
-
-// cinci leduri rosii
-function timeout3 (){
-	if (sistem > 1)
-		sistem = 0;
-	switch (sistem)
-	{
-		case 0:
-			components[0].digitalWrite(4,1);
-			components[0].digitalWrite(25,1);
-			components[0].digitalWrite(16,1);
-			components[0].digitalWrite(22,0);
-			components[0].digitalWrite(6,0);
-
-			break;
-		case 1:
-			components[0].digitalWrite(4,0);
-			components[0].digitalWrite(25,0);
-			components[0].digitalWrite(16,0);
-			components[0].digitalWrite(22,1);
-			components[0].digitalWrite(6,1);
-			break;
-	}
-	simulate ();
-	sistem++;
-}
-
-// cinci leduri rosii, test neterminat
-function timeout4 (){
-	if (sistem > 4)
-		sistem = 0;
-	switch (sistem)
-	{
-		case 0:
-			components[0].digitalWrite(4,1);
-			components[0].digitalWrite(25,1);
-			components[0].digitalWrite(16,1);
-			components[0].digitalWrite(22,0);
-			components[0].digitalWrite(6,0);
-
-			break;
-		case 1:
-			components[0].digitalWrite(4,0);
-			components[0].digitalWrite(25,0);
-			components[0].digitalWrite(16,0);
-			components[0].digitalWrite(22,1);
-			components[0].digitalWrite(6,1);
-			break;
-		case 2:
-			components[0].digitalWrite(4,0);
-			components[0].digitalWrite(25,0);
-			components[0].digitalWrite(16,0);
-			components[0].digitalWrite(22,1);
-			components[0].digitalWrite(6,1);
-			break;
-		case 3:
-			components[0].digitalWrite(4,0);
-			components[0].digitalWrite(25,0);
-			components[0].digitalWrite(16,0);
-			components[0].digitalWrite(22,1);
-			components[0].digitalWrite(6,1);
-			break;
-
-	}
-	simulate ();
-	sistem++;
-}
-
+// 	}
+// }
 
 function teste(file) {
-	switch(file)
-	{
-		case "demo":
-			setInterval(timeout, 1000);
-			break;
-		case "demo2":
-			setInterval(timeout2, 500);
-			break;
-		case "demo3":
-			setInterval(timeout3, 200);
-			break;
-		case "buton":
-			// setInterval(timeout4, 200);
 
-			break;
+	var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
+	editor.getSession().setMode(new JavaScriptMode());
 
+	if (file === "demo" || file === "demo2" || file === "demo3") {
+		$.get (file+'.txt', function (data)
+		{
+			editor.getSession().setValue(data);
+		});
+	} else {
+		editor.getSession().setValue("");
 	}
+
+
+	// switch(file.toLowerCase())
+	// {
+	// 	case "demo".toLowerCase():
+
+	// 		var timeout1;
+	// 		$.get("timeout1.txt", function(data) {
+	// 		    timeout1 = data;
+	// 		});
+	// 		console.log(timeout1);
+	// 		editor.getSession().setValue(timeout1);
+	// 		var cod = editor.getSession().getValue();
+	// 		runCode(cod);
+	// 		// $('#code').val($('#code').val()+timeout1);
+
+	// 		//setInterval(timeout, 1000);
+	// 		break;
+	// 	case "demo2".toLowerCase():
+	// 		editor.getSession().setValue(timeout2);
+	// 		var cod = editor.getSession().getValue();
+	// 		runCode(cod);
+
+	// 		// $('#code').val($('#code').val()+timeout2);
+	// 		//setInterval(timeout2, 500);
+	// 		break;
+	// 	case "demo3".toLowerCase():
+	// 		editor.getSession().setValue(timeout3);
+	// 		var cod = editor.getSession().getValue();
+	// 		runCode(cod);
+	// 		// $('#code').val($('#code').val()+timeout3);
+	// 		//setInterval(timeout3, 200);
+	// 		break;
+	// 	case "buton".toLowerCase():
+	// 		editor.getSession().setValue("");
+	// 		// setInterval(timeout4, 200);
+	// 		break;
+	// 	case "simple".toLowerCase():
+	// 		editor.getSession().setValue("");
+	// 		// setInterval(timeout4, 200);
+	// 		break;
+
+	// 		// var cod = editor.getSession().getValue();
+	// 		// runCode(cod);
+
+	// }
+
 }
-// var butonId = 71190;
-function butonClick () {
-	console.log("ceva");
-}
-
-// var but = document.createElement("button");
-
-// $("#svg1 svg g[partID=71190] ").append(<rect class="btn" x="0" y="0" width="10" height="10" onclick="alert('click!')" />);
-
-
-

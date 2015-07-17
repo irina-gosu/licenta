@@ -1,0 +1,25 @@
+var sistem = 0;
+function timeout3 (){
+	if (sistem > 1)
+		sistem = 0;
+	switch (sistem)
+	{
+		case 0:
+			components[0].digitalWrite(4,1);
+			components[0].digitalWrite(25,1);
+			components[0].digitalWrite(16,1);
+			components[0].digitalWrite(22,0);
+			components[0].digitalWrite(6,0);
+			break;
+		case 1:
+			components[0].digitalWrite(4,0);
+			components[0].digitalWrite(25,0);
+			components[0].digitalWrite(16,0);
+			components[0].digitalWrite(22,1);
+			components[0].digitalWrite(6,1);
+			break;
+	}
+	simulate ();
+	sistem++;
+}
+setInterval(timeout3, 200);

@@ -28,7 +28,7 @@
     <div class="container">
 
       <div class="header">
-        <ul class="nav nav-pills nav-justified">
+        <ul class="nav nav-pills nav-justified" >
           <li class="active"><a href="#">Wyliodrin Board Simulator</a></li>
         </ul>
       </div>
@@ -42,7 +42,12 @@
       <div style="width: 70%;" id="svg1"></div>
       <button class="nav nav-pills nav-justified" id="execute">Execute Code</button>
 
-      <textarea cols=38 rows=10 id="code"></textarea>
+      <!-- <textarea cols=38 rows=10 id="code"></textarea> -->
+      <div id="code"></div>
+
+      <!-- <script>
+          var editor = ace.edit("code");
+      </script> -->
  <!--
     <object id="svg1" data="board_cu_rezistenta.svg" type="image/svg+xml">
     </object> -->
@@ -106,7 +111,13 @@
         <script src="scripts/piese.js"></script>
         <script src="scripts/raspberryPiBoard.js"></script>
         <script src="scripts/genericBoard.js"></script>
+         <!-- <script src="scripts/light.js"></script> -->
+        <!-- // <script src="scripts/worker-javascript.js"></script> -->
+        <script src="scripts/ace.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="scripts/mode-javascript.js"></script>
         <script src="scripts/main.js"></script>
+
         <!-- endbuild -->
 </body>
 </html>

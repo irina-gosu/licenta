@@ -95,3 +95,9 @@ rect.btn {
   fill-opacity:100;
   stroke-opacity:100;
 }
+
+#code {
+    position: absolute;
+    width: 500px;
+    height: 400px;
+}

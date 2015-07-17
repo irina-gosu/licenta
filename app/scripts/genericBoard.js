@@ -203,22 +203,3 @@ function disconnectPins (component1, pin1, component2, pin2) {
 		}
 	}
 }
-
-var pi = raspberryPiBoard();
-// console.log(pi);
-
-var led = new Led ();
-
-
-
-var componentele = [];
-pi.componentId = componentele.length;
-componentele.push(pi);
-led.componentId = componentele.length;
-componentele.push(led);
-
-// var components_json = JSON.stringify(components);
-// var components_json = JSON.stringify(components, null, 4);
-
-// var div = document.getElementById('content');
-// div.innerHTML = components_json;

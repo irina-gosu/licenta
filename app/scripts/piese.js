@@ -136,14 +136,11 @@ function Button () {
 	this.label = "";
 	this.pin0 = new Pin (["input", "output"], "output", 0);
 	this.pin1 = new Pin (["OUT1"], "OUT1", 1);
-	//this.state = OFF;
-	// this.pin0.setPin(Z);
 	this.pins = [];
 	this.pins.push(this.pin0);
 	this.pins.push(this.pin1);
 	this.pins[0].setPin(Z);
 	this.componentId = -1;
-	// this.released();
 }
 Button.prototype.pushed = function() {
 	var modif = 0;
@@ -154,8 +151,6 @@ Button.prototype.pushed = function() {
 			this.pin0.neighbors[i].neighborPin.setPin(this.pin0.value);
 			this.pin0.neighbors[i].neighborPin.canModify = 0;
 		}
-		// this.pin0.canModify = 0;
-		console.log("buton apasat");
 	}
 	return modif;
 };
@@ -168,8 +163,6 @@ Button.prototype.released = function() {
 			this.pin0.neighbors[i].neighborPin.setPin(0);
 			this.pin0.neighbors[i].neighborPin.canModify = 1;
 		}
-		// this.pin0.canModify = 1;
-		console.log("buton eliberat");
 	}
 	return modif;
 };
